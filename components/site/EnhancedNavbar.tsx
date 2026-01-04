@@ -193,7 +193,7 @@ export default function EnhancedNavbar() {
                 {/* Legal */}
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className="bg-transparent hover:bg-emerald-500/10 text-black dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400">
-                    Legal
+                    Legals
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 bg-white dark:bg-gray-900 border border-emerald-500/20">
