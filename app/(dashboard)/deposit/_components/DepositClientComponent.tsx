@@ -96,6 +96,15 @@ const CryptoIcons: Record<string, React.ReactNode> = {
       <path d="M16 8v4m0 8v4" stroke="white" strokeWidth="2" />
     </svg>
   ),
+  XRP: (
+    <svg className="w-7 h-7 sm:w-8 sm:h-8" viewBox="0 0 32 32" fill="none">
+      <circle cx="16" cy="16" r="16" fill="#23292F" />
+      <path
+        d="M22.8 9h2.4l-5.6 5.6c-1.2 1.2-3.2 1.2-4.4 0L9.6 9H12l4 4c.4.4 1.2.4 1.6 0l4-4zm-13.6 14H6.8l5.6-5.6c1.2-1.2 3.2-1.2 4.4 0l5.6 5.6H20l-4-4c-.4-.4-1.2-.4-1.6 0l-4 4z"
+        fill="white"
+      />
+    </svg>
+  ),
 };
 
 // Crypto Icons Component
@@ -116,6 +125,7 @@ const getNetworkName = (currency: string): string => {
   if (currency === "BNB") return "BSC";
   if (currency === "TRX") return "Tron";
   if (currency === "USDC") return "BASE";
+  if (currency === "XRP") return "XRP Ledger";
   return currency;
 };
 
@@ -145,7 +155,9 @@ export default function DepositClientComponent() {
 
   const fetchDepositOptions = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/deposits/options/`);
+      const response = await fetch(`${BACKEND_URL}/deposits/options/`, {
+        cache: "no-store"
+      });
       const data = await response.json();
 
       if (data.success) {
@@ -160,6 +172,8 @@ export default function DepositClientComponent() {
       setLoading(false);
     }
   };
+
+  // console.log("Wallets: ", wallets);
 
   const fetchTransactionHistory = async () => {
     try {
