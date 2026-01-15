@@ -44,7 +44,6 @@ export default function LoginPage() {
   const emailValue = watch("email");
   const passwordValue = watch("password");
 
-
   const onSubmit = async (data: FormValues) => {
     const newData = { email: data.email, password: data.password };
 
@@ -86,13 +85,13 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => setMounted(true), []);
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row gap-10 bg-[#090909] dark:bg-white text-white dark:text-black transition-colors duration-300">
       {/* Left side: Login Form */}
-      <div className="flex-1 flex items-center justify-center px-8 py-16">
+      <div className="flex-1 flex items-center justify-center px-8 py-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -129,7 +128,7 @@ export default function LoginPage() {
               <Link href={"/"}>
                 <ArrowLeft />
               </Link>
-              Sign In
+              Login
             </h1>
 
             {/* Theme toggle */}
@@ -145,6 +144,11 @@ export default function LoginPage() {
                 )}
               </button>
             )}
+          </div>
+          <div className="">
+            <p className="text-gray-400 dark:text-gray-800">
+              Welcome back. Please login to access your account.
+            </p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -215,9 +219,14 @@ export default function LoginPage() {
               )}
             </div>
 
-            {/* <div className="text-sm text-emerald-500 hover:underline cursor-pointer">
-              Forgot password?
-            </div> */}
+            <div className="text-sm text-emerald-500 hover:underline cursor-pointer">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-emerald-500 hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
 
             <Button
               disabled={loading}
@@ -234,26 +243,30 @@ export default function LoginPage() {
             <p className="text-center text-sm">
               Don&apos;t have an account?{" "}
               <a href="/register" className="text-emerald-500 hover:underline">
-                Sign Up
+                Create an account
               </a>
             </p>
-
-            {/* <div className="flex items-center gap-2">
-              <div className="flex-1 h-px bg-gray-700 dark:bg-gray-300" />
-              <span className="text-gray-400 dark:text-gray-500 text-sm">
-                or
-              </span>
-              <div className="flex-1 h-px bg-gray-700 dark:bg-gray-300" />
-            </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full py-6 border-emerald-500 text-emerald-500 hover:bg-emerald-900/20 dark:hover:bg-emerald-50"
-            >
-              Login with Google
-            </Button> */}
           </form>
+          <div className="text-center mt-10 text-sm space-y-2.5">
+            <p className="text-gray-400 dark:text-gray-700">
+              Copyright &copy; {new Date().getFullYear()} Citadel Markets Pro
+            </p>
+            <div className="flex items-center justify-center gap-4">
+              <Link
+                className="text-emerald-500 hover:underline"
+                href={"/privacy-policy"}
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                className="text-emerald-500 hover:underline"
+                href={"/terms-service"}
+              >
+                Terms of service
+              </Link>
+            </div>
+            {/* Google Translate will be here */}
+          </div>
         </motion.div>
       </div>
 
