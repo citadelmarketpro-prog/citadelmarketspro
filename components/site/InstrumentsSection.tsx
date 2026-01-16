@@ -14,19 +14,19 @@ const InstrumentsSection = () => {
     "Most Popular": [
       {
         name: "Apple",
-        logo: "https://logo.clearbit.com/apple.com",
+        logo: "https://res.cloudinary.com/dkii82r08/image/upload/v1768483429/AAPL_meg5uo.jpg",
         buyPrice: "192.50",
         sellPrice: "192.30",
       },
       {
         name: "Tesla",
-        logo: "https://logo.clearbit.com/tesla.com",
+        logo: "https://res.cloudinary.com/dkii82r08/image/upload/v1768481807/Tesla__Inc.-Logo.wine_wwoywg.png",
         buyPrice: "245.80",
         sellPrice: "245.55",
       },
       {
         name: "Microsoft",
-        logo: "https://logo.clearbit.com/microsoft.com",
+        logo: "https://res.cloudinary.com/dkii82r08/image/upload/v1768482104/MSFT_jg76ey.webp",
         buyPrice: "378.90",
         sellPrice: "378.65",
       },
@@ -46,7 +46,7 @@ const InstrumentsSection = () => {
       },
       {
         name: "Oil",
-        logo: "https://logo.clearbit.com/exxonmobil.com",
+        logo: "https://res.cloudinary.com/dkii82r08/image/upload/v1768552903/OIL_bzgrru.jpg",
         buyPrice: "78.90",
         sellPrice: "78.75",
       },
@@ -54,19 +54,19 @@ const InstrumentsSection = () => {
     Indices: [
       {
         name: "S&P 500",
-        logo: "https://logo.clearbit.com/spglobal.com",
+        logo: "https://res.cloudinary.com/dkii82r08/image/upload/v1768552999/S_P500_cotxoy.png",
         buyPrice: "4567.80",
         sellPrice: "4567.20",
       },
       {
         name: "NASDAQ",
-        logo: "https://logo.clearbit.com/nasdaq.com",
+        logo: "https://res.cloudinary.com/dkii82r08/image/upload/v1768553067/NASDAQ_xl7p82.png",
         buyPrice: "14235.50",
         sellPrice: "14234.80",
       },
       {
         name: "Dow Jones",
-        logo: "https://logo.clearbit.com/dowjones.com",
+        logo: "https://res.cloudinary.com/dkii82r08/image/upload/v1768553241/DOWJONES_xuqq37.png",
         buyPrice: "35678.90",
         sellPrice: "35677.50",
       },
@@ -74,19 +74,19 @@ const InstrumentsSection = () => {
     Stocks: [
       {
         name: "Amazon",
-        logo: "https://logo.clearbit.com/amazon.com",
+        logo: "https://res.cloudinary.com/dkii82r08/image/upload/v1768482319/Amazon_icon_c2x9qa.png",
         buyPrice: "145.60",
         sellPrice: "145.40",
       },
       {
         name: "Google",
-        logo: "https://logo.clearbit.com/google.com",
+        logo: "https://res.cloudinary.com/dkii82r08/image/upload/v1768482264/googl_jb5hhg.webp",
         buyPrice: "138.75",
         sellPrice: "138.55",
       },
       {
         name: "Meta",
-        logo: "https://logo.clearbit.com/meta.com",
+        logo: "https://res.cloudinary.com/dkii82r08/image/upload/v1768482446/Meta_Platforms-Logo.wine_zzmw1l.png",
         buyPrice: "325.20",
         sellPrice: "325.00",
       },
@@ -100,13 +100,13 @@ const InstrumentsSection = () => {
       },
       {
         name: "Ethereum",
-        logo: "https://logo.clearbit.com/ethereum.org",
+        logo: "https://res.cloudinary.com/dkii82r08/image/upload/v1768553418/Ethereumtradeview_ud2inq.jpg",
         buyPrice: "2285.50",
         sellPrice: "2283.00",
       },
       {
         name: "BNB",
-        logo: "https://logo.clearbit.com/binance.com",
+        logo: "https://res.cloudinary.com/dkii82r08/image/upload/v1768553458/BNB_d2eppm.jpg",
         buyPrice: "315.80",
         sellPrice: "315.40",
       },

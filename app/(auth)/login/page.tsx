@@ -247,7 +247,33 @@ export default function LoginPage() {
               </a>
             </p>
           </form>
-          <div className="text-center mt-10 text-sm space-y-2.5">
+
+          <div className="text-left flex flex-col justify-center mx-auto gap-2 w-fit p-5 rounded-2xl">
+            <Image
+              src={"/trustpilot_images/logo_dark.svg"}
+              width={120}
+              height={120}
+              alt=""
+              className="dark:block hidden"
+            />
+            <Image
+              src={"/trustpilot_images/logo.svg"}
+              width={120}
+              height={120}
+              alt=""
+              className="dark:hidden block"
+            />
+            <Image
+              src={"/trustpilot_images/star.svg"}
+              width={120}
+              height={120}
+              alt=""
+            />
+            <div className="text-[12px] text-gray-300 dark:text-gray-600">
+              TrustScore <span className="font-bold">4.8</span>
+            </div>
+          </div>
+          <div className="text-center mt-1 text-sm space-y-2.5">
             <p className="text-gray-400 dark:text-gray-700">
               Copyright &copy; {new Date().getFullYear()} Citadel Markets Pro
             </p>
