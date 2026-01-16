@@ -10,10 +10,8 @@ import {
   TrendingUp,
   TrendingDown,
   RefreshCw,
-  Search,
   Briefcase,
   History,
-  Users,
   X,
   AlertCircle,
   BarChart3,
@@ -23,6 +21,80 @@ import DashboardNavbar from "@/components/main/DashboardNavbar";
 import { BACKEND_URL } from "@/lib/constants";
 import { PulseLoader } from "react-spinners";
 
+// ==================== HELPER FUNCTIONS ====================
+
+// Get appropriate icon/emoji for different market types
+const getMarketIcon = (market: string) => {
+  // Forex pairs
+  if (market.includes("/")) {
+    if (market.includes("XAU") || market.includes("XAG")) {
+      return "🥇"; // Gold/Silver
+    }
+    return "💱"; // Currency exchange
+  }
+
+  // Indices
+  const indices = ["SPX", "NDX", "DJI", "RUT"];
+  if (indices.includes(market)) {
+    return "📊";
+  }
+
+  // ETFs
+  const etfs = ["SPY", "QQQ", "DIA", "IWM", "VOO"];
+  if (etfs.includes(market)) {
+    return "📈";
+  }
+
+  // Commodities
+  const commodities = ["OIL", "BRENT", "NATGAS"];
+  if (commodities.includes(market)) {
+    return "🛢️";
+  }
+
+  // Crypto
+  if (
+    market.includes("BTC") ||
+    market.includes("ETH") ||
+    market.includes("BNB")
+  ) {
+    return "₿";
+  }
+
+  // Default to first letter for stocks
+  return market.substring(0, 1).toUpperCase();
+};
+
+// Get gradient colors based on market type
+const getMarketGradient = (market: string) => {
+  if (market.includes("/")) {
+    if (market.includes("XAU") || market.includes("XAG")) {
+      return "from-yellow-500 to-yellow-700"; // Gold/Silver
+    }
+    return "from-blue-500 to-blue-700"; // Forex
+  }
+
+  const indices = ["SPX", "NDX", "DJI", "RUT"];
+  if (indices.includes(market)) {
+    return "from-purple-500 to-purple-700"; // Indices
+  }
+
+  const etfs = ["SPY", "QQQ", "DIA", "IWM", "VOO"];
+  if (etfs.includes(market)) {
+    return "from-green-500 to-green-700"; // ETFs
+  }
+
+  const commodities = ["OIL", "BRENT", "NATGAS"];
+  if (commodities.includes(market)) {
+    return "from-orange-500 to-orange-700"; // Commodities
+  }
+
+  if (market.includes("BTC") || market.includes("ETH")) {
+    return "from-amber-500 to-amber-700"; // Crypto
+  }
+
+  return "from-emerald-500 to-emerald-700"; // Stocks (default)
+};
+
 // ==================== TYPES ====================
 
 interface CopyTradeHistory {
@@ -30,8 +102,9 @@ interface CopyTradeHistory {
   trader_name: string;
   trader_username: string;
   market: string;
+  market_name: string;
+  market_logo_url: string | null;
   direction: "buy" | "sell";
-  leverage: string;
   duration: string;
   amount: string;
   entry_price: string;
@@ -81,29 +154,7 @@ interface PositionSummary {
   total_profit_loss_percent: string;
 }
 
-interface Trade {
-  id: number;
-  stock: Stock;
-  trade_type: string;
-  shares: string;
-  price_per_share: string;
-  total_amount: string;
-  formatted_total: string;
-  profit_loss: string | null;
-  formatted_profit_loss: string | null;
-  reference: string;
-  notes: string;
-  executed_at: string;
-}
-
-interface TradeSummary {
-  total_trades: number;
-  buy_orders: number;
-  sell_orders: number;
-  total_profit_loss: string;
-}
-
-type TabType = "positions" | "copy-trading" | "history";
+type TabType = "history" | "live-trading";
 
 // ==================== SELL MODAL ====================
 
@@ -297,13 +348,13 @@ function SellModal({ position, onClose, onSuccess }: SellModalProps) {
 
 export default function TradingDashboardPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabType>("positions");
+  const [activeTab, setActiveTab] = useState<TabType>("history");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Copy Trading
+  // History (formerly Copy Trading)
   const [copyTradeStatus, setCopyTradeStatus] = useState<"open" | "closed">(
-    "open"
+    "closed"
   );
   const [copyTrades, setCopyTrades] = useState<CopyTradeHistory[]>([]);
   const [copyTradeSummary, setCopyTradeSummary] =
@@ -313,7 +364,7 @@ export default function TradingDashboardPage() {
   );
   const [closingTrade, setClosingTrade] = useState<number | null>(null);
 
-  // Positions
+  // Live Trading (formerly Positions)
   const [positions, setPositions] = useState<Position[]>([]);
   const [positionSummary, setPositionSummary] =
     useState<PositionSummary | null>(null);
@@ -322,29 +373,17 @@ export default function TradingDashboardPage() {
     null
   );
 
-  // Trade History
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const [tradeSummary, setTradeSummary] = useState<TradeSummary | null>(null);
-  const [tradeFilter, setTradeFilter] = useState<"all" | "buy" | "sell">("all");
-  const [searchTerm, setSearchTerm] = useState("");
-
   useEffect(() => {
     fetchAllData();
   }, []);
+
   useEffect(() => {
-    if (activeTab === "copy-trading") fetchCopyTrades();
-  }, [copyTradeStatus]);
-  useEffect(() => {
-    if (activeTab === "history") fetchTradeHistory();
-  }, [tradeFilter]);
+    if (activeTab === "history") fetchCopyTrades();
+  }, [copyTradeStatus, activeTab]);
 
   const fetchAllData = async () => {
     setLoading(true);
-    await Promise.all([
-      fetchPositions(),
-      fetchCopyTrades(),
-      fetchTradeHistory(),
-    ]);
+    await Promise.all([fetchPositions(), fetchCopyTrades()]);
     setLoading(false);
   };
 
@@ -380,7 +419,7 @@ export default function TradingDashboardPage() {
       const token = localStorage.getItem("authToken");
       if (!token) return;
       const res = await fetch(
-        `${BACKEND_URL}/copy-trade-history/?status=${copyTradeStatus}`,
+        `${BACKEND_URL}/copy-trade-history/`,
         {
           headers: { Authorization: `Token ${token}` },
         }
@@ -389,25 +428,6 @@ export default function TradingDashboardPage() {
       if (data.success) {
         setCopyTrades(data.history);
         setCopyTradeSummary(data.summary);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const fetchTradeHistory = async () => {
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) return;
-      let url = `${BACKEND_URL}/trades/history/?limit=100`;
-      if (tradeFilter !== "all") url += `&trade_type=${tradeFilter}`;
-      const res = await fetch(url, {
-        headers: { Authorization: `Token ${token}` },
-      });
-      const data = await res.json();
-      if (data.success) {
-        setTrades(data.trades);
-        setTradeSummary(data.summary);
       }
     } catch (e) {
       console.error(e);
@@ -442,29 +462,15 @@ export default function TradingDashboardPage() {
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("en-US", {
-      month: "short",
       day: "numeric",
+      month: "short",
       year: "numeric",
     });
-  const formatDateTime = (d: string) =>
-    new Date(d).toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-  const filteredTrades = trades.filter(
-    (t) =>
-      !searchTerm ||
-      t.stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.stock.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const stats = {
     totalPositions: positions.length,
-    openCopyTrades: copyTradeSummary?.open_trades || 0,
-    totalTrades: tradeSummary?.total_trades || 0,
+    closedTrades: copyTradeSummary?.closed_trades || 0,
+    openTrades: copyTradeSummary?.open_trades || 0,
     overallPL:
       (positionSummary ? parseFloat(positionSummary.total_profit_loss) : 0) +
       (copyTradeSummary ? parseFloat(copyTradeSummary.total_profit_loss) : 0),
@@ -490,10 +496,10 @@ export default function TradingDashboardPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div>
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
-              Trading History
+              Trading Dashboard
             </h1>
             <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Manage your positions, copy trades, and trading history
+              View your trade history and active positions
             </p>
           </div>
           <button
@@ -510,14 +516,14 @@ export default function TradingDashboardPage() {
 
         {/* STATS CARDS */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
-          {/* Positions */}
+          {/* Live Positions */}
           <div className="bg-slate-800/60 dark:bg-white border border-slate-700/50 dark:border-slate-200 rounded-xl p-3 sm:p-4 lg:p-5">
             <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
               <div className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/10">
                 <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
               </div>
               <span className="text-[10px] sm:text-xs text-slate-400">
-                Active Positions
+                Live Positions
               </span>
             </div>
             <div className="text-xl sm:text-2xl font-bold">
@@ -525,33 +531,33 @@ export default function TradingDashboardPage() {
             </div>
           </div>
 
-          {/* Copy Trades */}
+          {/* Closed Trades */}
           <div className="bg-slate-800/60 dark:bg-white border border-slate-700/50 dark:border-slate-200 rounded-xl p-3 sm:p-4 lg:p-5">
             <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
               <div className="p-1.5 sm:p-2 rounded-lg bg-blue-500/10">
-                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+                <History className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
               </div>
               <span className="text-[10px] sm:text-xs text-slate-400">
-                Copy Trades
+                Closed Trades
               </span>
             </div>
             <div className="text-xl sm:text-2xl font-bold">
-              {stats.openCopyTrades}
+              {stats.closedTrades}
             </div>
           </div>
 
-          {/* Total Trades */}
+          {/* Open Trades */}
           <div className="bg-slate-800/60 dark:bg-white border border-slate-700/50 dark:border-slate-200 rounded-xl p-3 sm:p-4 lg:p-5">
             <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
               <div className="p-1.5 sm:p-2 rounded-lg bg-purple-500/10">
                 <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
               </div>
               <span className="text-[10px] sm:text-xs text-slate-400">
-                Total Trades
+                Open Trades
               </span>
             </div>
             <div className="text-xl sm:text-2xl font-bold">
-              {stats.totalTrades}
+              {stats.openTrades}
             </div>
           </div>
 
@@ -588,20 +594,11 @@ export default function TradingDashboardPage() {
         <div className="bg-slate-800/50 dark:bg-white border border-slate-700/50 dark:border-slate-200 rounded-xl p-1 sm:p-1.5 mb-4 sm:mb-6">
           <div className="flex gap-1">
             {[
+              { id: "history" as TabType, label: "History", icon: History },
               {
-                id: "positions" as TabType,
-                label: "Positions",
+                id: "live-trading" as TabType,
+                label: "Live Trading",
                 icon: Briefcase,
-              },
-              {
-                id: "copy-trading" as TabType,
-                label: "Copy Trading",
-                icon: Users,
-              },
-              {
-                id: "history" as TabType,
-                label: "Trade History",
-                icon: History,
               },
             ].map((tab) => (
               <button
@@ -610,25 +607,324 @@ export default function TradingDashboardPage() {
                 className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                   activeTab === tab.id
                     ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25"
-                    : "text-slate-400 hover:text-white hover:bg-slate-700/50"
+                    : "text-slate-400 hover:text-white hover:bg-slate-700/50 dark:hover:bg-slate-100"
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
-                <span className="sm:hidden">
-                  {tab.id === "copy-trading"
-                    ? "Copy"
-                    : tab.id === "history"
-                    ? "History"
-                    : "Positions"}
-                </span>
+                <span>{tab.label}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* ========== POSITIONS TAB ========== */}
-        {activeTab === "positions" && (
+        {/* ========== HISTORY TAB ========== */}
+        {activeTab === "history" && (
+          <div className="space-y-3 sm:space-y-4">
+            {/* Summary */}
+            {copyTradeSummary && (
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
+                <div className="bg-slate-800/50 dark:bg-white border border-slate-700/50 dark:border-slate-200 rounded-xl p-3 sm:p-4">
+                  <div className="text-[10px] sm:text-xs text-slate-400 mb-1">
+                    Open Trades
+                  </div>
+                  <div className="text-lg sm:text-xl font-bold text-emerald-400">
+                    {copyTradeSummary.open_trades}
+                  </div>
+                </div>
+                <div className="bg-slate-800/50 dark:bg-white border border-slate-700/50 dark:border-slate-200 rounded-xl p-3 sm:p-4">
+                  <div className="text-[10px] sm:text-xs text-slate-400 mb-1">
+                    Closed Trades
+                  </div>
+                  <div className="text-lg sm:text-xl font-bold">
+                    {copyTradeSummary.closed_trades}
+                  </div>
+                </div>
+                <div className="bg-slate-800/50 dark:bg-white border border-slate-700/50 dark:border-slate-200 rounded-xl p-3 sm:p-4">
+                  <div className="text-[10px] sm:text-xs text-slate-400 mb-1">
+                    Total P/L
+                  </div>
+                  <div
+                    className={`text-lg sm:text-xl font-bold ${
+                      parseFloat(copyTradeSummary.total_profit_loss) >= 0
+                        ? "text-emerald-400"
+                        : "text-red-400"
+                    }`}
+                  >
+                    {parseFloat(copyTradeSummary.total_profit_loss) >= 0
+                      ? "+"
+                      : ""}
+                    ${parseFloat(copyTradeSummary.total_profit_loss).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+            )}
+
+
+            {/* Empty */}
+            {copyTrades.length === 0 ? (
+              <div className="bg-slate-800/50 dark:bg-white border border-slate-700/50 dark:border-slate-200 rounded-xl p-8 sm:p-12 text-center">
+                <History className="w-12 h-12 sm:w-16 sm:h-16 text-slate-600 mx-auto mb-3 sm:mb-4" />
+                <h3 className="text-base sm:text-xl font-semibold mb-2">
+                  No {copyTradeStatus} trades
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-400">
+                  Your {copyTradeStatus} trades will appear here
+                </p>
+              </div>
+            ) : (
+              /* Trade Cards */
+              <div className="space-y-2 sm:space-y-3">
+                {copyTrades.map((trade) => {
+                  const pl = parseFloat(trade.profit_loss);
+                  const isProfitable = pl >= 0;
+                  const entryPrice = parseFloat(trade.entry_price);
+                  const plPercent =
+                    entryPrice > 0 ? (pl / entryPrice) * 100 : 0;
+
+                  return (
+                    <div
+                      key={trade.id}
+                      className="bg-slate-800/50 dark:bg-white border border-slate-700/50 dark:border-slate-200 rounded-xl overflow-hidden"
+                    >
+                      {/* Main Card */}
+                      <div
+                        onClick={() =>
+                          setExpandedCopyTrade(
+                            expandedCopyTrade === trade.id ? null : trade.id
+                          )
+                        }
+                        className="p-4 sm:p-5 cursor-pointer hover:bg-slate-700/30 dark:hover:bg-slate-50 transition-colors"
+                      >
+                        {/* Top Row: Logo, Symbol/Name, Status */}
+                        <div className="flex items-center justify-between mb-4 gap-3">
+                          {/* Logo & Info */}
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            {/* Company Logo with Fallback */}
+                            <div
+                              className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex-shrink-0 flex items-center justify-center relative bg-gradient-to-br ${getMarketGradient(
+                                trade.market
+                              )}`}
+                            >
+                              {trade.market_logo_url ? (
+                                <img
+                                  src={trade.market_logo_url}
+                                  alt={trade.market}
+                                  className="w-full h-full object-contain p-2 bg-white rounded-xl absolute inset-0"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = "none";
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-white font-bold text-xl">
+                                  {getMarketIcon(trade.market)}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Symbol & Name */}
+                            <div className="flex-1 min-w-0">
+                              <div className="font-bold text-base sm:text-lg mb-0.5">
+                                {trade.market}
+                              </div>
+                              <div className="text-xs sm:text-sm text-slate-400 truncate">
+                                {trade.market_name}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Status Badge */}
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+                              trade.status === "open"
+                                ? "bg-emerald-500/20 text-emerald-400"
+                                : "bg-slate-600/50 text-slate-300"
+                            }`}
+                          >
+                            {trade.status === "open"
+                              ? "Live account"
+                              : "Closed"}
+                          </span>
+                        </div>
+
+                        {/* Trade Details Grid */}
+                        <div className="space-y-3">
+                          {/* Date */}
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs sm:text-sm text-slate-400">
+                              Date:
+                            </span>
+                            <span className="text-sm sm:text-base font-medium">
+                              {formatDate(trade.opened_at)}
+                            </span>
+                          </div>
+
+                          {/* Entry Price */}
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs sm:text-sm text-slate-400">
+                              Entry Price:
+                            </span>
+                            <span className="text-sm sm:text-base font-semibold">
+                              ${parseFloat(trade.entry_price).toLocaleString()}
+                            </span>
+                          </div>
+
+                          {/* P/L Day */}
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs sm:text-sm text-slate-400">
+                              P/L Day:
+                            </span>
+                            <span
+                              className={`text-lg sm:text-xl font-bold ${
+                                isProfitable
+                                  ? "text-emerald-400"
+                                  : "text-red-400"
+                              }`}
+                            >
+                              {isProfitable ? "+" : ""}$
+                              {Math.abs(pl).toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </span>
+                          </div>
+
+                          {/* P/L % */}
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs sm:text-sm text-slate-400">
+                              P/L %:
+                            </span>
+                            <span
+                              className={`inline-block px-4 py-1.5 rounded-lg text-base sm:text-lg font-bold ${
+                                isProfitable
+                                  ? "bg-emerald-500/20 text-emerald-400"
+                                  : "bg-red-500/20 text-red-400"
+                              }`}
+                            >
+                              {isProfitable ? "+" : ""}
+                              {plPercent.toFixed(2)}%
+                            </span>
+                          </div>
+
+                          {/* Status */}
+                          <div className="flex justify-between items-center pt-2 border-t border-slate-700/50 dark:border-slate-200">
+                            <span className="text-xs sm:text-sm text-slate-400">
+                              Status:
+                            </span>
+                            <span className="text-sm sm:text-base font-medium">
+                              {/* {trade.status === "open"
+                                ? "Live account"
+                                : "Closed Trade"} */}
+                              Live account
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="mt-4 flex items-center justify-between">
+                          <button
+                            className="text-xs sm:text-sm text-slate-400 hover:text-white dark:hover:text-slate-900 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {expandedCopyTrade === trade.id ? (
+                              <div className="flex items-center gap-1">
+                                <span>Less details</span>
+                                <ChevronUp className="w-4 h-4" />
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1">
+                                <span>More details</span>
+                                <ChevronDown className="w-4 h-4" />
+                              </div>
+                            )}
+                          </button>
+
+                          {trade.status === "open" && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCloseCopyTrade(trade.id);
+                              }}
+                              disabled={closingTrade === trade.id}
+                              className="px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-xs sm:text-sm font-medium hover:bg-red-500/20 transition-colors disabled:opacity-50"
+                            >
+                              {closingTrade === trade.id
+                                ? "Closing..."
+                                : "Close Trade"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Expanded Details */}
+                      {expandedCopyTrade === trade.id && (
+                        <div className="border-t border-slate-700/50 dark:border-slate-200 p-4 sm:p-5 bg-slate-900/50 dark:bg-slate-50">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <div className="text-xs text-slate-400 mb-1">
+                                Direction
+                              </div>
+                              <div
+                                className={`text-sm font-semibold ${
+                                  trade.direction === "buy"
+                                    ? "text-emerald-400"
+                                    : "text-red-400"
+                                }`}
+                              >
+                                {trade.direction.toUpperCase()}
+                              </div>
+                            </div>
+
+                            <div>
+                              <div className="text-xs text-slate-400 mb-1">
+                                Amount
+                              </div>
+                              <div className="text-sm font-semibold">
+                                {parseFloat(trade.amount).toFixed(6)}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-xs text-slate-400 mb-1">
+                                Duration
+                              </div>
+                              <div className="text-sm font-semibold">
+                                {trade.duration}
+                              </div>
+                            </div>
+                            {trade.exit_price && (
+                              <div>
+                                <div className="text-xs text-slate-400 mb-1">
+                                  Exit Price
+                                </div>
+                                <div className="text-sm font-semibold">
+                                  $
+                                  {parseFloat(
+                                    trade.exit_price
+                                  ).toLocaleString()}
+                                </div>
+                              </div>
+                            )}
+                            {/* <div>
+                              <div className="text-xs text-slate-400 mb-1">
+                                Reference
+                              </div>
+                              <div className="text-xs font-mono bg-slate-800 dark:bg-white px-2 py-1 rounded break-all">
+                                {trade.reference.substring(0, 12)}...
+                              </div>
+                            </div> */}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========== LIVE TRADING TAB ========== */}
+        {activeTab === "live-trading" && (
           <div className="space-y-3 sm:space-y-4">
             {/* Summary */}
             {positionSummary && positions.length > 0 && (
@@ -682,7 +978,7 @@ export default function TradingDashboardPage() {
 
             {/* Empty State */}
             {positions.length === 0 ? (
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 sm:p-12 text-center">
+              <div className="bg-slate-800/50 dark:bg-white border border-slate-700/50 dark:border-slate-200 rounded-xl p-8 sm:p-12 text-center">
                 <Briefcase className="w-12 h-12 sm:w-16 sm:h-16 text-slate-600 mx-auto mb-3 sm:mb-4" />
                 <h3 className="text-base sm:text-xl font-semibold mb-2">
                   No Active Positions
@@ -692,7 +988,7 @@ export default function TradingDashboardPage() {
                 </p>
                 <button
                   onClick={() => router.push("/stock")}
-                  className="px-5 sm:px-6 py-2.5 sm:py-3 bg-emerald-500 text-white rounded-xl text-sm font-medium"
+                  className="px-5 sm:px-6 py-2.5 sm:py-3 bg-emerald-500 text-white rounded-xl text-sm font-medium hover:bg-emerald-600 transition-colors"
                 >
                   Browse Stocks
                 </button>
@@ -719,7 +1015,7 @@ export default function TradingDashboardPage() {
                               expandedPosition === pos.id ? null : pos.id
                             )
                           }
-                          className="p-3 sm:p-4 cursor-pointer hover:bg-slate-700/30 transition-colors"
+                          className="p-3 sm:p-4 cursor-pointer hover:bg-slate-700/30 dark:hover:bg-slate-50 transition-colors"
                         >
                           <div className="flex items-center gap-3 sm:gap-4">
                             {/* Logo */}
@@ -781,7 +1077,7 @@ export default function TradingDashboardPage() {
                                 e.stopPropagation();
                                 setSellModalPosition(pos);
                               }}
-                              className="hidden sm:block px-3 sm:px-4 py-1.5 sm:py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-xs sm:text-sm font-medium"
+                              className="hidden sm:block px-3 sm:px-4 py-1.5 sm:py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-xs sm:text-sm font-medium hover:bg-red-500/20 transition-colors"
                             >
                               Sell
                             </button>
@@ -800,7 +1096,7 @@ export default function TradingDashboardPage() {
                               e.stopPropagation();
                               setSellModalPosition(pos);
                             }}
-                            className="sm:hidden w-full mt-3 py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-xs font-medium"
+                            className="sm:hidden w-full mt-3 py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-xs font-medium hover:bg-red-500/20 transition-colors"
                           >
                             Sell Order
                           </button>
@@ -808,7 +1104,7 @@ export default function TradingDashboardPage() {
 
                         {/* Expanded */}
                         {expandedPosition === pos.id && (
-                          <div className="border-t border-slate-700/50 p-3 sm:p-4 bg-slate-900/50">
+                          <div className="border-t border-slate-700/50 dark:border-slate-200 p-3 sm:p-4 bg-slate-900/50 dark:bg-slate-50">
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                               <div>
                                 <div className="text-[10px] sm:text-xs text-slate-400 mb-1">
@@ -844,7 +1140,7 @@ export default function TradingDashboardPage() {
                                 </div>
                               </div>
                             </div>
-                            <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-700/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                            <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-700/50 dark:border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                               <span className="text-xs sm:text-sm text-slate-400">
                                 Opened: {formatDate(pos.opened_at)}
                               </span>
@@ -852,7 +1148,7 @@ export default function TradingDashboardPage() {
                                 onClick={() =>
                                   router.push(`/stock/${pos.stock.symbol}`)
                                 }
-                                className="text-xs sm:text-sm text-emerald-400 font-medium"
+                                className="text-xs sm:text-sm text-emerald-400 font-medium hover:text-emerald-300 transition-colors"
                               >
                                 View Stock →
                               </button>
@@ -862,498 +1158,6 @@ export default function TradingDashboardPage() {
                       </div>
                     );
                   })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ========== COPY TRADING TAB ========== */}
-        {activeTab === "copy-trading" && (
-          <div className="space-y-3 sm:space-y-4">
-            {/* Summary */}
-            {copyTradeSummary && (
-              <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 sm:p-4">
-                  <div className="text-[10px] sm:text-xs text-slate-400 mb-1">
-                    Open Trades
-                  </div>
-                  <div className="text-lg sm:text-xl font-bold text-emerald-400">
-                    {copyTradeSummary.open_trades}
-                  </div>
-                </div>
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 sm:p-4">
-                  <div className="text-[10px] sm:text-xs text-slate-400 mb-1">
-                    Closed Trades
-                  </div>
-                  <div className="text-lg sm:text-xl font-bold">
-                    {copyTradeSummary.closed_trades}
-                  </div>
-                </div>
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 sm:p-4">
-                  <div className="text-[10px] sm:text-xs text-slate-400 mb-1">
-                    Total P/L
-                  </div>
-                  <div
-                    className={`text-lg sm:text-xl font-bold ${
-                      parseFloat(copyTradeSummary.total_profit_loss) >= 0
-                        ? "text-emerald-400"
-                        : "text-red-400"
-                    }`}
-                  >
-                    ${parseFloat(copyTradeSummary.total_profit_loss).toFixed(2)}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Toggle */}
-            <div className="flex gap-2 sm:gap-3">
-              {(["open", "closed"] as const).map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setCopyTradeStatus(s)}
-                  className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium capitalize transition-all ${
-                    copyTradeStatus === s
-                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25"
-                      : "bg-slate-800/50 border border-slate-700/50 text-slate-400 hover:bg-slate-700/50"
-                  }`}
-                >
-                  {s} Trades
-                </button>
-              ))}
-            </div>
-
-            {/* Empty */}
-            {copyTrades.length === 0 ? (
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 sm:p-12 text-center">
-                <Users className="w-12 h-12 sm:w-16 sm:h-16 text-slate-600 mx-auto mb-3 sm:mb-4" />
-                <h3 className="text-base sm:text-xl font-semibold mb-2">
-                  No {copyTradeStatus} copy trades
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-400">
-                  Your {copyTradeStatus} copy trades will appear here
-                </p>
-              </div>
-            ) : (
-              /* List */
-              <div className="space-y-2 sm:space-y-3">
-                {copyTrades.map((trade) => (
-                  <div
-                    key={trade.id}
-                    className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden"
-                  >
-                    <div
-                      onClick={() =>
-                        setExpandedCopyTrade(
-                          expandedCopyTrade === trade.id ? null : trade.id
-                        )
-                      }
-                      className="p-3 sm:p-4 cursor-pointer hover:bg-slate-700/30 transition-colors"
-                    >
-                      <div className="flex items-center gap-3 sm:gap-4">
-                        {/* Icon */}
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-orange-500/20 flex items-center justify-center text-orange-400 font-bold text-xs sm:text-sm flex-shrink-0">
-                          {trade.market.substring(0, 3).toUpperCase()}
-                        </div>
-
-                        {/* Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 flex-wrap">
-                            <span className="font-bold text-sm sm:text-base">
-                              {trade.market}
-                            </span>
-                            <span className="text-[9px] sm:text-xs bg-blue-500/20 text-blue-400 px-1.5 sm:px-2 py-0.5 rounded">
-                              {trade.leverage}
-                            </span>
-                            <span
-                              className={`text-[9px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded ${
-                                trade.direction === "buy"
-                                  ? "bg-emerald-500/20 text-emerald-400"
-                                  : "bg-red-500/20 text-red-400"
-                              }`}
-                            >
-                              {trade.direction.toUpperCase()}
-                            </span>
-                          </div>
-                          <div className="text-[10px] sm:text-xs text-slate-400 truncate">
-                            {trade.trader_name} • {trade.time_ago}
-                          </div>
-                        </div>
-
-                        {/* P/L */}
-                        <div
-                          className={`text-sm sm:text-base lg:text-lg font-bold flex-shrink-0 ${
-                            trade.is_profit
-                              ? "text-emerald-400"
-                              : "text-red-400"
-                          }`}
-                        >
-                          {trade.is_profit ? "+" : ""}$
-                          {parseFloat(trade.profit_loss).toFixed(2)}
-                        </div>
-
-                        {/* Close (desktop) */}
-                        {trade.status === "open" && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCloseCopyTrade(trade.id);
-                            }}
-                            disabled={closingTrade === trade.id}
-                            className="hidden sm:block px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs sm:text-sm font-medium disabled:opacity-50"
-                          >
-                            {closingTrade === trade.id ? "Closing..." : "Close"}
-                          </button>
-                        )}
-
-                        {expandedCopyTrade === trade.id ? (
-                          <ChevronUp className="w-5 h-5 text-slate-400 flex-shrink-0" />
-                        ) : (
-                          <ChevronDown className="w-5 h-5 text-slate-400 flex-shrink-0" />
-                        )}
-                      </div>
-
-                      {/* Close (mobile) */}
-                      {trade.status === "open" && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCloseCopyTrade(trade.id);
-                          }}
-                          disabled={closingTrade === trade.id}
-                          className="sm:hidden w-full mt-3 py-2 bg-slate-700 text-white rounded-lg text-xs font-medium disabled:opacity-50"
-                        >
-                          {closingTrade === trade.id
-                            ? "Closing..."
-                            : "Close Trade"}
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Expanded */}
-                    {expandedCopyTrade === trade.id && (
-                      <div className="border-t border-slate-700/50 p-3 sm:p-4 bg-slate-900/50">
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                          <div>
-                            <div className="text-[10px] sm:text-xs text-slate-400 mb-1">
-                              Entry Price
-                            </div>
-                            <div className="text-sm sm:text-base font-semibold">
-                              ${parseFloat(trade.entry_price).toLocaleString()}
-                            </div>
-                          </div>
-                          {trade.exit_price && (
-                            <div>
-                              <div className="text-[10px] sm:text-xs text-slate-400 mb-1">
-                                Exit Price
-                              </div>
-                              <div className="text-sm sm:text-base font-semibold">
-                                ${parseFloat(trade.exit_price).toLocaleString()}
-                              </div>
-                            </div>
-                          )}
-                          <div>
-                            <div className="text-[10px] sm:text-xs text-slate-400 mb-1">
-                              Amount
-                            </div>
-                            <div className="text-sm sm:text-base font-semibold">
-                              {parseFloat(trade.amount).toFixed(6)}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-[10px] sm:text-xs text-slate-400 mb-1">
-                              Duration
-                            </div>
-                            <div className="text-sm sm:text-base font-semibold">
-                              {trade.duration}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-700/50">
-                          <div className="text-[10px] sm:text-xs text-slate-400 mb-1">
-                            Reference
-                          </div>
-                          <div className="font-mono text-xs sm:text-sm bg-slate-800 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg break-all">
-                            {trade.reference}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ========== HISTORY TAB ========== */}
-        {activeTab === "history" && (
-          <div className="space-y-3 sm:space-y-4">
-            {/* Summary */}
-            {tradeSummary && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 sm:p-4">
-                  <div className="text-[10px] sm:text-xs text-slate-400 mb-1">
-                    Total Trades
-                  </div>
-                  <div className="text-lg sm:text-xl font-bold">
-                    {tradeSummary.total_trades}
-                  </div>
-                </div>
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 sm:p-4">
-                  <div className="text-[10px] sm:text-xs text-slate-400 mb-1">
-                    Buy Orders
-                  </div>
-                  <div className="text-lg sm:text-xl font-bold text-emerald-400">
-                    {tradeSummary.buy_orders}
-                  </div>
-                </div>
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 sm:p-4">
-                  <div className="text-[10px] sm:text-xs text-slate-400 mb-1">
-                    Sell Orders
-                  </div>
-                  <div className="text-lg sm:text-xl font-bold text-red-400">
-                    {tradeSummary.sell_orders}
-                  </div>
-                </div>
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 sm:p-4">
-                  <div className="text-[10px] sm:text-xs text-slate-400 mb-1">
-                    Realized P/L
-                  </div>
-                  <div
-                    className={`text-lg sm:text-xl font-bold ${
-                      parseFloat(tradeSummary.total_profit_loss) >= 0
-                        ? "text-emerald-400"
-                        : "text-red-400"
-                    }`}
-                  >
-                    ${parseFloat(tradeSummary.total_profit_loss).toFixed(2)}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Search + Filter */}
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 sm:p-4">
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Search by symbol or name..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 text-sm bg-slate-900/50 border border-slate-700/50 rounded-lg focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  {(["all", "buy", "sell"] as const).map((f) => (
-                    <button
-                      key={f}
-                      onClick={() => setTradeFilter(f)}
-                      className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium capitalize transition-colors ${
-                        tradeFilter === f
-                          ? "bg-emerald-500 text-white"
-                          : "bg-slate-700/50 text-slate-400 hover:bg-slate-600/50"
-                      }`}
-                    >
-                      {f}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Empty */}
-            {filteredTrades.length === 0 ? (
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 sm:p-12 text-center">
-                <History className="w-12 h-12 sm:w-16 sm:h-16 text-slate-600 mx-auto mb-3 sm:mb-4" />
-                <h3 className="text-base sm:text-xl font-semibold mb-2">
-                  No Trading History
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-400">
-                  {searchTerm
-                    ? "No trades found matching your search"
-                    : "Start trading to see your history here"}
-                </p>
-              </div>
-            ) : (
-              /* List */
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
-                {/* Desktop Table */}
-                <div className="hidden lg:block overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-slate-700/50">
-                        <th className="text-left py-4 px-5 text-xs font-semibold text-slate-400">
-                          Stock
-                        </th>
-                        <th className="text-left py-4 px-5 text-xs font-semibold text-slate-400">
-                          Type
-                        </th>
-                        <th className="text-left py-4 px-5 text-xs font-semibold text-slate-400">
-                          Shares
-                        </th>
-                        <th className="text-left py-4 px-5 text-xs font-semibold text-slate-400">
-                          Price
-                        </th>
-                        <th className="text-left py-4 px-5 text-xs font-semibold text-slate-400">
-                          Total
-                        </th>
-                        <th className="text-left py-4 px-5 text-xs font-semibold text-slate-400">
-                          P/L
-                        </th>
-                        <th className="text-left py-4 px-5 text-xs font-semibold text-slate-400">
-                          Date
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTrades.map((trade) => (
-                        <tr
-                          key={trade.id}
-                          onClick={() =>
-                            router.push(`/stock/${trade.stock.symbol}`)
-                          }
-                          className="border-b border-slate-700/30 hover:bg-slate-700/30 cursor-pointer transition-colors"
-                        >
-                          <td className="py-4 px-5">
-                            <div className="flex items-center gap-3">
-                              {trade.stock.logo_url && (
-                                <div className="w-10 h-10 rounded-lg overflow-hidden bg-white flex-shrink-0">
-                                  <Image
-                                    src={trade.stock.logo_url}
-                                    alt=""
-                                    width={40}
-                                    height={40}
-                                    className="object-contain p-1"
-                                  />
-                                </div>
-                              )}
-                              <div>
-                                <div className="font-semibold">
-                                  {trade.stock.symbol}
-                                </div>
-                                <div className="text-xs text-slate-400 truncate max-w-[120px]">
-                                  {trade.stock.name}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-4 px-5">
-                            <span
-                              className={`inline-block px-2.5 py-1 rounded text-xs font-medium uppercase ${
-                                trade.trade_type === "buy"
-                                  ? "bg-emerald-500/20 text-emerald-400"
-                                  : "bg-red-500/20 text-red-400"
-                              }`}
-                            >
-                              {trade.trade_type}
-                            </span>
-                          </td>
-                          <td className="py-4 px-5 font-medium">
-                            {parseFloat(trade.shares).toFixed(4)}
-                          </td>
-                          <td className="py-4 px-5">
-                            ${parseFloat(trade.price_per_share).toFixed(2)}
-                          </td>
-                          <td className="py-4 px-5 font-semibold">
-                            {trade.formatted_total}
-                          </td>
-                          <td className="py-4 px-5">
-                            {trade.profit_loss ? (
-                              <span
-                                className={`font-semibold ${
-                                  parseFloat(trade.profit_loss) >= 0
-                                    ? "text-emerald-400"
-                                    : "text-red-400"
-                                }`}
-                              >
-                                {trade.formatted_profit_loss}
-                              </span>
-                            ) : (
-                              <span className="text-slate-500">-</span>
-                            )}
-                          </td>
-                          <td className="py-4 px-5 text-slate-400 text-sm">
-                            {formatDateTime(trade.executed_at)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Mobile List */}
-                <div className="lg:hidden divide-y divide-slate-700/50">
-                  {filteredTrades.map((trade) => (
-                    <div
-                      key={trade.id}
-                      onClick={() =>
-                        router.push(`/stock/${trade.stock.symbol}`)
-                      }
-                      className="p-3 sm:p-4 hover:bg-slate-700/30 cursor-pointer transition-colors"
-                    >
-                      <div className="flex items-center gap-3 mb-2">
-                        {trade.stock.logo_url && (
-                          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg overflow-hidden bg-white flex-shrink-0">
-                            <Image
-                              src={trade.stock.logo_url}
-                              alt=""
-                              width={44}
-                              height={44}
-                              className="object-contain p-1"
-                            />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm sm:text-base">
-                              {trade.stock.symbol}
-                            </span>
-                            <span
-                              className={`text-[10px] sm:text-xs px-1.5 py-0.5 rounded uppercase ${
-                                trade.trade_type === "buy"
-                                  ? "bg-emerald-500/20 text-emerald-400"
-                                  : "bg-red-500/20 text-red-400"
-                              }`}
-                            >
-                              {trade.trade_type}
-                            </span>
-                          </div>
-                          <div className="text-[10px] sm:text-xs text-slate-400 truncate">
-                            {trade.stock.name}
-                          </div>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <div className="text-sm sm:text-base font-semibold">
-                            {trade.formatted_total}
-                          </div>
-                          {trade.profit_loss ? (
-                            <div
-                              className={`text-xs sm:text-sm font-medium ${
-                                parseFloat(trade.profit_loss) >= 0
-                                  ? "text-emerald-400"
-                                  : "text-red-400"
-                              }`}
-                            >
-                              {trade.formatted_profit_loss}
-                            </div>
-                          ) : (
-                            <div className="text-xs text-slate-500">-</div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center text-[10px] sm:text-xs text-slate-400">
-                        <span>
-                          {parseFloat(trade.shares).toFixed(4)} shares @ $
-                          {parseFloat(trade.price_per_share).toFixed(2)}
-                        </span>
-                        <span>{formatDateTime(trade.executed_at)}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
             )}
           </div>
