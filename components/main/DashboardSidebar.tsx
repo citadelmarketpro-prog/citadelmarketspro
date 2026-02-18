@@ -12,6 +12,7 @@ import {
   History,
   ShoppingCart,
   Users,
+  ArrowUpDown,
 } from "lucide-react";
 
 interface UserProfile {
@@ -81,6 +82,11 @@ const DashboardSidebar = () => {
       id: "withdrawal",
       label: "Withdrawal",
       href: "/withdraw",
+    },
+    {
+      id: "transfer",
+      label: "Transfer",
+      href: "/transfer",
     },
     {
       id: "news",
@@ -293,6 +299,9 @@ const DashboardSidebar = () => {
                         d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                       />
                     </svg>
+                  )}
+                  {item.id === "transfer" && (
+                    <ArrowUpDown className="w-5 h-5" />
                   )}
                   {item.id === "news" && (
                     <svg

@@ -11,6 +11,7 @@ import {
 import Image from "next/image";
 import ScrollReveal from "./ScrollReveal";
 import Link from "next/link";
+import LiquidityProvidersSection from "./LiquidityProvidersSection";
 
 const ReadyToStartSection = () => {
   const steps = [
@@ -104,7 +105,7 @@ const ReadyToStartSection = () => {
         </div>
 
         {/* Banking Partners Section */}
-        <ScrollReveal direction="up" delay={0.2}>
+        {/* <ScrollReveal direction="up" delay={0.2}>
           <div className="mb-20">
             <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white text-center mb-4">
               Your funds are held in top-tier institutions
@@ -114,7 +115,7 @@ const ReadyToStartSection = () => {
               partners including:
             </p>
 
-            {/* Bank Logos Grid */}
+            
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center w-fit mx-auto justify-items-center mb-8">
               {bankLogos.map((bank, index) => (
                 
@@ -132,7 +133,7 @@ const ReadyToStartSection = () => {
               ))}
             </div>
           </div>
-        </ScrollReveal>
+        </ScrollReveal> */}
 
         {/* Trusted Worldwide Section */}
         <ScrollReveal direction="up" delay={0.2}>

@@ -13,6 +13,7 @@ import ReadyToStartSection from "@/components/site/ReadyToStartSection";
 import TopLeadersSection from "@/components/site/TopLeadersSection";
 import Footer from "@/components/site/FooterSection";
 import EnhancedNavbar from "@/components/site/EnhancedNavbar";
+import LiquidityProvidersSection from "@/components/site/LiquidityProvidersSection";
 
 export default function Home() {
   return (
@@ -24,9 +25,11 @@ export default function Home() {
       <HowItWorks />
       <InstrumentsSection />
       <ReadyToStartSection />
+      <LiquidityProvidersSection />
       <TeamSection />
       <TopLeadersSection />
       <FAQSection />
+
       <VerifiedCompanySection />
       <Footer />
     </>
