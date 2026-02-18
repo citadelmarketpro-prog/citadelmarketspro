@@ -207,7 +207,7 @@ export default function DepositClientComponent() {
     setShowAmountModal(true);
   };
 
-  const handleAmountSubmit = (data: {
+  const handleAmountSubmit = async (data: {
     dollarAmount: string;
     currencyAmount: string;
   }) => {
@@ -215,6 +215,29 @@ export default function DepositClientComponent() {
     setCurrencyAmount(data.currencyAmount);
     setShowAmountModal(false);
     setShowDetailsModal(true);
+
+    // Notify admin of deposit intent at Stage 1 (fire-and-forget)
+    try {
+      const token = localStorage.getItem("authToken");
+      if (token && selectedWallet) {
+        fetch(`${BACKEND_URL}/deposits/notify-intent/`, {
+          method: "POST",
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            currency: selectedWallet.currency,
+            dollar_amount: data.dollarAmount,
+            currency_unit: data.currencyAmount,
+          }),
+        }).catch(() => {
+          // Silently ignore — email failure must not block the user flow
+        });
+      }
+    } catch {
+      // Silently ignore
+    }
   };
 
   const handleConfirmDeposit = async (receipt: File) => {

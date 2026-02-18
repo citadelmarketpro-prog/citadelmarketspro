@@ -12,6 +12,7 @@ import Link from "next/link";
 import Image from "next/image";
 import AssetOverviewSection from "./_components/AssetOverviewSection";
 import QuickActions from "./_components/QuickActions";
+import LoyaltyProgramModal from "./_components/LoyaltyProgramModal";
 
 interface Transaction {
   id: number;
@@ -152,13 +153,19 @@ export default function Dashboard() {
   };
 
   const getLoyaltyImage = (status: string) => {
-    const images = {
+    const images: Record<string, string> = {
       iron: "/images/iron.png",
+      bronze: "/images/bronze.svg",
       silver: "/images/silver.png",
       gold: "/images/gold.png",
+      platinum: "/images/platinum.svg",
+      diamond: "/images/diamond.svg",
+      elite: "/images/elite.svg",
     };
-    return images[status as keyof typeof images] || images.iron;
+    return images[status] || images.iron;
   };
+
+  const [showLoyaltyModal, setShowLoyaltyModal] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -315,10 +322,22 @@ export default function Dashboard() {
           {/* Loyalty Program - UPDATED WITH IMAGES */}
           <div className="">
             <aside className="bg-slate-800/60 dark:bg-white border border-slate-700/40 dark:border-slate-200 rounded-xl sm:rounded-2xl p-5 sm:p-6 shadow-xl backdrop-blur-sm">
-              <h2 className="text-xl sm:text-2xl font-semibold text-slate-100 dark:text-slate-900">
-                Loyalty Program
-              </h2>
-              <p className="mt-2 text-xs sm:text-sm text-slate-400 dark:text-slate-600">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-semibold text-slate-100 dark:text-slate-900">
+                  Loyalty Program
+                </h2>
+                <button
+                  onClick={() => setShowLoyaltyModal(true)}
+                  className="p-1 rounded-full hover:bg-slate-700/50 dark:hover:bg-slate-100 transition-colors"
+                  aria-label="About Loyalty Program"
+                >
+                  <Info className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+                </button>
+              </div>
+              <p
+                className="mt-2 text-xs sm:text-sm text-slate-400 dark:text-slate-600 cursor-pointer hover:text-emerald-400 dark:hover:text-emerald-600 transition-colors underline decoration-dashed underline-offset-4"
+                onClick={() => setShowLoyaltyModal(true)}
+              >
                 Deposit more to increase your Loyalty Rank
               </p>
 
@@ -390,7 +409,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* UPGRADE AMOUNT DISPLAY - NEW SECTION */}
-                {dashboardData.current_loyalty_status !== "gold" && (
+                {dashboardData.current_loyalty_status !== "elite" && (
                   <div className="p-4 sm:p-5 bg-gradient-to-r from-emerald-900/40 to-green-900/40 dark:from-emerald-50 dark:to-green-50 border border-emerald-700/40 dark:border-emerald-200 rounded-xl">
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-full bg-emerald-500/20 dark:bg-emerald-100 border border-emerald-500/40 dark:border-emerald-300 grid place-items-center flex-shrink-0">
@@ -420,9 +439,9 @@ export default function Dashboard() {
                 )}
 
                 {/* Gold Tier Achievement Message */}
-                {dashboardData.current_loyalty_status === "gold" && (
-                  <div className="p-4 sm:p-5 bg-gradient-to-r from-yellow-900/40 to-amber-900/40 dark:from-yellow-50 dark:to-amber-50 border border-yellow-700/40 dark:border-yellow-200 rounded-xl text-center">
-                    <div className="inline-flex items-center gap-2 text-yellow-400 dark:text-yellow-600 font-semibold">
+                {dashboardData.current_loyalty_status === "elite" && (
+                  <div className="p-4 sm:p-5 bg-gradient-to-r from-purple-900/40 to-pink-900/40 dark:from-purple-50 dark:to-pink-50 border border-purple-700/40 dark:border-purple-200 rounded-xl text-center">
+                    <div className="inline-flex items-center gap-2 text-purple-400 dark:text-purple-600 font-semibold">
                       <svg
                         className="w-5 h-5"
                         fill="currentColor"
@@ -432,8 +451,8 @@ export default function Dashboard() {
                       </svg>
                       You&apos;ve reached the highest tier!
                     </div>
-                    <p className="text-xs text-yellow-400/70 dark:text-yellow-600/70 mt-2">
-                      Congratulations on achieving Gold status
+                    <p className="text-xs text-purple-400/70 dark:text-purple-600/70 mt-2">
+                      Congratulations on achieving Elite status
                     </p>
                   </div>
                 )}
@@ -654,6 +673,12 @@ export default function Dashboard() {
           animation: border-spotlight 3s linear infinite;
         }
       `}</style>
+
+      <LoyaltyProgramModal
+        isOpen={showLoyaltyModal}
+        onClose={() => setShowLoyaltyModal(false)}
+        currentTier={dashboardData?.current_loyalty_status}
+      />
     </div>
   );
 }

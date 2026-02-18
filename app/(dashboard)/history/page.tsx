@@ -97,6 +97,27 @@ const getMarketGradient = (market: string) => {
 
 // ==================== TYPES ====================
 
+// interface CopyTradeHistory {
+//   id: number;
+//   trader_name: string;
+//   trader_username: string;
+//   market: string;
+//   market_name: string;
+//   market_logo_url: string | null;
+//   direction: "buy" | "sell";
+//   duration: string;
+//   amount: string;
+//   entry_price: string;
+//   exit_price: string | null;
+//   profit_loss: string;
+//   status: "open" | "closed";
+//   opened_at: string;
+//   closed_at: string | null;
+//   reference: string;
+//   time_ago: string;
+//   is_profit: boolean;
+// }
+
 interface CopyTradeHistory {
   id: number;
   trader_name: string;
@@ -106,10 +127,12 @@ interface CopyTradeHistory {
   market_logo_url: string | null;
   direction: "buy" | "sell";
   duration: string;
-  amount: string;
+  amount: string; // Trader's base amount
+  user_amount_invested: string; // ✅ NEW: User's investment
   entry_price: string;
   exit_price: string | null;
-  profit_loss: string;
+  profit_loss_percent: string; // ✅ Changed: Now percentage
+  user_profit_loss: string; // ✅ NEW: User's actual P/L
   status: "open" | "closed";
   opened_at: string;
   closed_at: string | null;
@@ -354,13 +377,13 @@ export default function TradingDashboardPage() {
 
   // History (formerly Copy Trading)
   const [copyTradeStatus, setCopyTradeStatus] = useState<"open" | "closed">(
-    "closed"
+    "closed",
   );
   const [copyTrades, setCopyTrades] = useState<CopyTradeHistory[]>([]);
   const [copyTradeSummary, setCopyTradeSummary] =
     useState<CopyTradeSummary | null>(null);
   const [expandedCopyTrade, setExpandedCopyTrade] = useState<number | null>(
-    null
+    null,
   );
   const [closingTrade, setClosingTrade] = useState<number | null>(null);
 
@@ -370,7 +393,7 @@ export default function TradingDashboardPage() {
     useState<PositionSummary | null>(null);
   const [expandedPosition, setExpandedPosition] = useState<number | null>(null);
   const [sellModalPosition, setSellModalPosition] = useState<Position | null>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -402,7 +425,7 @@ export default function TradingDashboardPage() {
         `${BACKEND_URL}/stocks/positions/list/?active_only=true`,
         {
           headers: { Authorization: `Token ${token}` },
-        }
+        },
       );
       const data = await res.json();
       if (data.success) {
@@ -418,12 +441,9 @@ export default function TradingDashboardPage() {
     try {
       const token = localStorage.getItem("authToken");
       if (!token) return;
-      const res = await fetch(
-        `${BACKEND_URL}/copy-trade-history/`,
-        {
-          headers: { Authorization: `Token ${token}` },
-        }
-      );
+      const res = await fetch(`${BACKEND_URL}/copy-trade-history/`, {
+        headers: { Authorization: `Token ${token}` },
+      });
       const data = await res.json();
       if (data.success) {
         setCopyTrades(data.history);
@@ -446,7 +466,7 @@ export default function TradingDashboardPage() {
             "Content-Type": "application/json",
             Authorization: `Token ${token}`,
           },
-        }
+        },
       );
       const data = await res.json();
       if (data.success) {
@@ -659,7 +679,6 @@ export default function TradingDashboardPage() {
               </div>
             )}
 
-
             {/* Empty */}
             {copyTrades.length === 0 ? (
               <div className="bg-slate-800/50 dark:bg-white border border-slate-700/50 dark:border-slate-200 rounded-xl p-8 sm:p-12 text-center">
@@ -675,11 +694,11 @@ export default function TradingDashboardPage() {
               /* Trade Cards */
               <div className="space-y-2 sm:space-y-3">
                 {copyTrades.map((trade) => {
-                  const pl = parseFloat(trade.profit_loss);
-                  const isProfitable = pl >= 0;
-                  const entryPrice = parseFloat(trade.entry_price);
-                  const plPercent =
-                    entryPrice > 0 ? (pl / entryPrice) * 100 : 0;
+                  // ✅ Use user-specific profit/loss values
+                  const userPL = parseFloat(trade.user_profit_loss);
+                  const plPercent = parseFloat(trade.profit_loss_percent);
+                  const isProfitable = userPL >= 0;
+                  const userInvestment = parseFloat(trade.user_amount_invested);
 
                   return (
                     <div
@@ -690,7 +709,7 @@ export default function TradingDashboardPage() {
                       <div
                         onClick={() =>
                           setExpandedCopyTrade(
-                            expandedCopyTrade === trade.id ? null : trade.id
+                            expandedCopyTrade === trade.id ? null : trade.id,
                           )
                         }
                         className="p-4 sm:p-5 cursor-pointer hover:bg-slate-700/30 dark:hover:bg-slate-50 transition-colors"
@@ -702,7 +721,7 @@ export default function TradingDashboardPage() {
                             {/* Company Logo with Fallback */}
                             <div
                               className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex-shrink-0 flex items-center justify-center relative bg-gradient-to-br ${getMarketGradient(
-                                trade.market
+                                trade.market,
                               )}`}
                             >
                               {trade.market_logo_url ? (
@@ -741,9 +760,7 @@ export default function TradingDashboardPage() {
                                 : "bg-slate-600/50 text-slate-300"
                             }`}
                           >
-                            {trade.status === "open"
-                              ? "Live account"
-                              : "Closed"}
+                            {trade.status === "open" ? "Live" : "Closed"}
                           </span>
                         </div>
 
@@ -759,20 +776,41 @@ export default function TradingDashboardPage() {
                             </span>
                           </div>
 
+                          {/* ✅ NEW: Your Investment */}
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs sm:text-sm text-slate-400">
+                              Your Investment:
+                            </span>
+                            <span className="text-sm sm:text-base font-semibold">
+                              $
+                              {userInvestment.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </span>
+                          </div>
+
                           {/* Entry Price */}
                           <div className="flex justify-between items-center">
                             <span className="text-xs sm:text-sm text-slate-400">
                               Entry Price:
                             </span>
                             <span className="text-sm sm:text-base font-semibold">
-                              ${parseFloat(trade.entry_price).toLocaleString()}
+                              $
+                              {parseFloat(trade.entry_price).toLocaleString(
+                                undefined,
+                                {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                },
+                              )}
                             </span>
                           </div>
 
-                          {/* P/L Day */}
+                          {/* ✅ UPDATED: Your P/L (Dollar Amount) */}
                           <div className="flex justify-between items-center">
                             <span className="text-xs sm:text-sm text-slate-400">
-                              P/L Day:
+                              Your P/L:
                             </span>
                             <span
                               className={`text-lg sm:text-xl font-bold ${
@@ -782,14 +820,14 @@ export default function TradingDashboardPage() {
                               }`}
                             >
                               {isProfitable ? "+" : ""}$
-                              {Math.abs(pl).toLocaleString(undefined, {
+                              {Math.abs(userPL).toLocaleString(undefined, {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2,
                               })}
                             </span>
                           </div>
 
-                          {/* P/L % */}
+                          {/* P/L Percentage */}
                           <div className="flex justify-between items-center">
                             <span className="text-xs sm:text-sm text-slate-400">
                               P/L %:
@@ -812,10 +850,9 @@ export default function TradingDashboardPage() {
                               Status:
                             </span>
                             <span className="text-sm sm:text-base font-medium">
-                              {/* {trade.status === "open"
-                                ? "Live account"
-                                : "Closed Trade"} */}
-                              Live account
+                              {trade.status === "open"
+                                ? "Live Trade"
+                                : "Closed Trade"}
                             </span>
                           </div>
                         </div>
@@ -862,6 +899,15 @@ export default function TradingDashboardPage() {
                           <div className="grid grid-cols-2 gap-4">
                             <div>
                               <div className="text-xs text-slate-400 mb-1">
+                                Trader
+                              </div>
+                              <div className="text-sm font-semibold">
+                                {trade.trader_name}
+                              </div>
+                            </div>
+
+                            <div>
+                              <div className="text-xs text-slate-400 mb-1">
                                 Direction
                               </div>
                               <div
@@ -877,12 +923,20 @@ export default function TradingDashboardPage() {
 
                             <div>
                               <div className="text-xs text-slate-400 mb-1">
-                                Amount
+                                Trader's Amount
                               </div>
                               <div className="text-sm font-semibold">
-                                {parseFloat(trade.amount).toFixed(6)}
+                                $
+                                {parseFloat(trade.amount).toLocaleString(
+                                  undefined,
+                                  {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 6,
+                                  },
+                                )}
                               </div>
                             </div>
+
                             <div>
                               <div className="text-xs text-slate-400 mb-1">
                                 Duration
@@ -891,6 +945,7 @@ export default function TradingDashboardPage() {
                                 {trade.duration}
                               </div>
                             </div>
+
                             {trade.exit_price && (
                               <div>
                                 <div className="text-xs text-slate-400 mb-1">
@@ -898,20 +953,62 @@ export default function TradingDashboardPage() {
                                 </div>
                                 <div className="text-sm font-semibold">
                                   $
-                                  {parseFloat(
-                                    trade.exit_price
-                                  ).toLocaleString()}
+                                  {parseFloat(trade.exit_price).toLocaleString(
+                                    undefined,
+                                    {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    },
+                                  )}
                                 </div>
                               </div>
                             )}
-                            {/* <div>
+
+                            <div>
                               <div className="text-xs text-slate-400 mb-1">
                                 Reference
                               </div>
                               <div className="text-xs font-mono bg-slate-800 dark:bg-white px-2 py-1 rounded break-all">
-                                {trade.reference.substring(0, 12)}...
+                                {trade.reference}
                               </div>
-                            </div> */}
+                            </div>
+                          </div>
+
+                          {/* ✅ NEW: Investment Breakdown */}
+                          <div className="mt-4 pt-4 border-t border-slate-700/50 dark:border-slate-200">
+                            <div className="text-xs text-slate-400 mb-2">
+                              Your Investment Breakdown
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="bg-slate-800/50 dark:bg-slate-100 p-3 rounded-lg">
+                                <div className="text-xs text-slate-400 mb-1">
+                                  Investment
+                                </div>
+                                <div className="text-base font-bold">
+                                  ${userInvestment.toFixed(2)}
+                                </div>
+                              </div>
+                              <div
+                                className={`p-3 rounded-lg ${
+                                  isProfitable
+                                    ? "bg-emerald-500/10"
+                                    : "bg-red-500/10"
+                                }`}
+                              >
+                                <div className="text-xs text-slate-400 mb-1">
+                                  Current Value
+                                </div>
+                                <div
+                                  className={`text-base font-bold ${
+                                    isProfitable
+                                      ? "text-emerald-400"
+                                      : "text-red-400"
+                                  }`}
+                                >
+                                  ${(userInvestment + userPL).toFixed(2)}
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -962,12 +1059,12 @@ export default function TradingDashboardPage() {
                       : ""}
                     $
                     {Math.abs(
-                      parseFloat(positionSummary.total_profit_loss)
+                      parseFloat(positionSummary.total_profit_loss),
                     ).toFixed(2)}
                     <span className="text-xs sm:text-sm ml-1">
                       (
                       {parseFloat(
-                        positionSummary.total_profit_loss_percent
+                        positionSummary.total_profit_loss_percent,
                       ).toFixed(2)}
                       %)
                     </span>
@@ -1012,7 +1109,7 @@ export default function TradingDashboardPage() {
                         <div
                           onClick={() =>
                             setExpandedPosition(
-                              expandedPosition === pos.id ? null : pos.id
+                              expandedPosition === pos.id ? null : pos.id,
                             )
                           }
                           className="p-3 sm:p-4 cursor-pointer hover:bg-slate-700/30 dark:hover:bg-slate-50 transition-colors"
