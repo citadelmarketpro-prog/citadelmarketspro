@@ -923,7 +923,7 @@ export default function TradingDashboardPage() {
 
                             <div>
                               <div className="text-xs text-slate-400 mb-1">
-                                Trader's Amount
+                                Trader&apos;s Amount
                               </div>
                               <div className="text-sm font-semibold">
                                 $
