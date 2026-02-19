@@ -268,39 +268,73 @@ export default function Dashboard() {
               Balance Overview
             </h2>
             <p className="mt-2 text-xs sm:text-sm text-slate-400 dark:text-slate-600">
-              Available balance including the converted total balance
+              Your main balance and profit account at a glance
             </p>
 
-            <div className="mt-5 sm:mt-6 p-6 sm:p-8 bg-[url('/images/asset-bg.png')] bg-[#040a17cc] bg-blend-color-burn bg-cover bg-center rounded-xl relative">
-              <div className="absolute left-5 sm:left-6 top-5 sm:top-6 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-200 border border-slate-300 grid place-items-center">
-                <svg
-                  className="w-5 h-5 sm:w-6 sm:h-6 text-slate-900"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.72-2.81-.01-2.2-1.9-2.96-3.65-3.38z" />
-                </svg>
-              </div>
-
-              <div className="text-right mb-6">
-                <span className="text-basis text-lg sm:text-xl font-semibold text-slate-300">
+            {/* Main card — Bybit-style */}
+            <div className="mt-5 sm:mt-6 bg-[url('/images/asset-bg.png')] bg-[#040a17cc] bg-blend-color-burn bg-cover bg-center rounded-xl overflow-hidden">
+              {/* Top row: icon + currency */}
+              <div className="flex items-center justify-between px-5 sm:px-6 pt-5 sm:pt-6 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-200 border border-slate-300 grid place-items-center flex-shrink-0">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-slate-900" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.72-2.81-.01-2.2-1.9-2.96-3.65-3.38z" />
+                    </svg>
+                  </div>
+                  <span className="text-xs font-medium text-slate-400 uppercase tracking-widest">
+                    Main Balance
+                  </span>
+                </div>
+                <span className="text-xs sm:text-sm font-semibold text-slate-400 bg-slate-700/50 dark:bg-slate-600/30 px-2.5 py-1 rounded-md">
                   {dashboardData.currency}
                 </span>
               </div>
 
-              <div className="text-2xl sm:text-5xl font-light text-white mb-5 sm:mb-6">
-                $
-                {dashboardData.balance.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
+              {/* Main balance value */}
+              <div className="px-5 sm:px-6 pb-5">
+                <div className="text-3xl sm:text-5xl font-light text-white tracking-tight">
+                  $
+                  {dashboardData.balance.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+                {/* <p className="mt-1.5 text-xs text-slate-500">
+                  Reg. Date:{" "}
+                  <span className="text-slate-300 font-medium">
+                    {formatDate(dashboardData.date_joined)}
+                  </span>
+                </p> */}
               </div>
 
-              <div className="text-xs sm:text-sm text-slate-400">
-                Reg. Date:{" "}
-                <span className="font-semibold text-slate-200">
-                  {formatDate(dashboardData.date_joined)}
-                </span>
+              {/* Divider */}
+              <div className="mx-5 sm:mx-6 border-t border-slate-700/50" />
+
+              {/* Profit row */}
+              <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-emerald-500/15 border border-emerald-500/30 grid place-items-center flex-shrink-0">
+                    <TrendingUp className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-slate-400 uppercase tracking-widest font-medium">
+                      Profit Account
+                    </p>
+                    <p className="text-xl sm:text-2xl font-semibold text-emerald-400 leading-tight">
+                      $
+                      {dashboardData.profit.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => router.push("/transfer")}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 text-xs font-semibold transition-colors"
+                >
+                  Transfer
+                </button>
               </div>
             </div>
 
