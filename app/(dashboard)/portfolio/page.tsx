@@ -291,7 +291,7 @@ export default function Dashboard() {
               </div>
 
               {/* Main balance value */}
-              <div className="px-5 sm:px-6 pb-5">
+              <div className="px-5 sm:px-6 pb-10">
                 <div className="text-3xl sm:text-5xl font-light text-white tracking-tight">
                   $
                   {dashboardData.balance.toLocaleString(undefined, {
@@ -308,10 +308,10 @@ export default function Dashboard() {
               </div>
 
               {/* Divider */}
-              <div className="mx-5 sm:mx-6 border-t border-slate-700/50" />
+              {/* <div className="mx-5 sm:mx-6 border-t border-slate-700/50" /> */}
 
               {/* Profit row */}
-              <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5">
+              {/* <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-emerald-500/15 border border-emerald-500/30 grid place-items-center flex-shrink-0">
                     <TrendingUp className="w-4 h-4 text-emerald-400" />
@@ -335,7 +335,7 @@ export default function Dashboard() {
                 >
                   Transfer
                 </button>
-              </div>
+              </div> */}
             </div>
 
             <div className="mt-4">
