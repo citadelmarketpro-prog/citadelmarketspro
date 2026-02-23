@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, Info, TrendingUp, TrendingDown, X } from "lucide-react";
+import { ArrowLeft, Info, TrendingUp, TrendingDown, X, Clock } from "lucide-react";
 import { toast } from "sonner";
 import {
   PieChart,
@@ -77,6 +77,7 @@ export default function TraderProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [userBalance, setUserBalance] = useState<number>(0);
   const [isCopying, setIsCopying] = useState(false);
+  const [cancelRequested, setCancelRequested] = useState(false);
   const [loadingBalance, setLoadingBalance] = useState(false);
   const [copyActionLoading, setCopyActionLoading] = useState(false);
 
@@ -186,8 +187,13 @@ export default function TraderProfilePage() {
 
       const data = await response.json();
 
-      if (data.success && data.is_copying) {
-        setIsCopying(true);
+      if (data.success) {
+        if (data.is_copying) {
+          setIsCopying(true);
+        }
+        if (data.cancel_requested) {
+          setCancelRequested(true);
+        }
       }
     } catch (err) {
       console.error("Error fetching copy status:", err);
@@ -286,9 +292,9 @@ export default function TraderProfilePage() {
         throw new Error(data.error || "Failed to cancel copy");
       }
 
-      setIsCopying(false);
-      toast.info("Copy Cancelled", {
-        description: data.message || `You have stopped copying ${trader.name}`,
+      setCancelRequested(true);
+      toast.info("Cancel Request Sent", {
+        description: data.message || `Your cancel request for ${trader.name} is awaiting admin approval.`,
       });
     } catch (err) {
       console.error("Error canceling copy:", err);
@@ -402,7 +408,14 @@ export default function TraderProfilePage() {
           </div>
 
           <div className="flex flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-            {!isCopying ? (
+            {cancelRequested ? (
+              /* Cancel request sent — awaiting admin approval */
+              <div className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 bg-amber-500/20 border border-amber-500/40 text-amber-400 rounded-lg text-sm sm:text-base font-medium">
+                <Clock className="w-4 h-4 flex-shrink-0" />
+                <span>Cancel Requested</span>
+              </div>
+            ) : !isCopying ? (
+              /* Not copying — show Copy Trader button */
               <button
                 onClick={handleCopyTrader}
                 disabled={loadingBalance || copyActionLoading}
@@ -419,13 +432,12 @@ export default function TraderProfilePage() {
                   : "Copy Trader"}
               </button>
             ) : (
+              /* Actively copying — show Copying badge + Cancel button */
               <>
-                <button
-                  className="flex-1 sm:flex-initial px-4 sm:px-6 py-2 sm:py-2.5 bg-yellow-500 text-white rounded-lg text-sm sm:text-base font-medium transition-all flex items-center justify-center gap-2 cursor-default"
-                  disabled
-                >
+                <div className="flex-1 sm:flex-initial px-4 sm:px-6 py-2 sm:py-2.5 bg-green-500/20 border border-green-500/40 text-green-400 rounded-lg text-sm sm:text-base font-medium flex items-center justify-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                   Copying
-                </button>
+                </div>
                 <button
                   onClick={handleCancelCopy}
                   disabled={copyActionLoading}
@@ -434,7 +446,7 @@ export default function TraderProfilePage() {
                   }`}
                 >
                   <X className="w-4 h-4" />
-                  {copyActionLoading ? "Cancelling..." : "Cancel"}
+                  {copyActionLoading ? "Sending..." : "Stop"}
                 </button>
               </>
             )}
@@ -442,11 +454,21 @@ export default function TraderProfilePage() {
         </div>
 
         {/* Balance Warning */}
-        {!hasEnoughBalance && (
+        {!hasEnoughBalance && !isCopying && !cancelRequested && (
           <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
             <p className="text-red-500 dark:text-red-600 text-sm">
               ⚠️ Minimum balance required: ${minThreshold.toLocaleString()} •
               Your balance: ${userBalance.toLocaleString()}
+            </p>
+          </div>
+        )}
+
+        {/* Cancel Requested Banner */}
+        {cancelRequested && (
+          <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-3">
+            <Clock className="w-5 h-5 text-amber-400 flex-shrink-0" />
+            <p className="text-amber-400 dark:text-amber-600 text-sm">
+              Your cancel request is pending admin review. You will continue copying {trader.name} until the admin approves your request.
             </p>
           </div>
         )}

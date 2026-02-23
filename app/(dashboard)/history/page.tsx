@@ -120,8 +120,8 @@ const getMarketGradient = (market: string) => {
 
 interface CopyTradeHistory {
   id: number;
-  trader_name: string;
-  trader_username: string;
+  trader_name?: string;
+  trader_username?: string;
   market: string;
   market_name: string;
   market_logo_url: string | null;
@@ -897,15 +897,6 @@ export default function TradingDashboardPage() {
                       {expandedCopyTrade === trade.id && (
                         <div className="border-t border-slate-700/50 dark:border-slate-200 p-4 sm:p-5 bg-slate-900/50 dark:bg-slate-50">
                           <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <div className="text-xs text-slate-400 mb-1">
-                                Trader
-                              </div>
-                              <div className="text-sm font-semibold">
-                                {trade.trader_name}
-                              </div>
-                            </div>
-
                             <div>
                               <div className="text-xs text-slate-400 mb-1">
                                 Direction

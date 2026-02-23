@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { AlertCircle, Info } from "lucide-react";
+import { AlertCircle, Info, CreditCard, X } from "lucide-react";
 import DashboardNavbar from "@/components/main/DashboardNavbar";
 import { BACKEND_URL } from "@/lib/constants";
 import { PulseLoader } from "react-spinners";
@@ -148,6 +148,17 @@ export default function DepositClientComponent() {
   const [submitting, setSubmitting] = useState(false);
   const [depositReference, setDepositReference] = useState("");
 
+  // Card modal state
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [cardholderName, setCardholderName] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [billingAddress, setBillingAddress] = useState("");
+  const [billingZip, setBillingZip] = useState("");
+  const [cardError, setCardError] = useState("");
+  const [submittingCard, setSubmittingCard] = useState(false);
+
   useEffect(() => {
     fetchDepositOptions();
     fetchTransactionHistory();
@@ -291,6 +302,88 @@ export default function DepositClientComponent() {
     setDepositReference("");
   };
 
+  const formatCardNumber = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 19);
+    return digits.replace(/(\d{4})(?=\d)/g, "$1 ");
+  };
+
+  const closeCardModal = () => {
+    setShowCardModal(false);
+    setCardholderName("");
+    setCardNumber("");
+    setCardExpiry("");
+    setCvv("");
+    setBillingAddress("");
+    setBillingZip("");
+    setCardError("");
+  };
+
+  const handleCardSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCardError("");
+
+    const rawNumber = cardNumber.replace(/\s/g, "");
+    if (!cardholderName.trim()) {
+      setCardError("Cardholder name is required");
+      return;
+    }
+    if (rawNumber.length < 13 || rawNumber.length > 19) {
+      setCardError("Invalid card number");
+      return;
+    }
+    const expiryParts = cardExpiry.split("/");
+    const expMonth = expiryParts[0]?.trim() || "";
+    const expYear = expiryParts[1]?.trim() || "";
+    if (expMonth.length !== 2 || expYear.length !== 2) {
+      setCardError("Enter a valid expiry date (MM/YY)");
+      return;
+    }
+    const monthNum = parseInt(expMonth, 10);
+    if (monthNum < 1 || monthNum > 12) {
+      setCardError("Invalid expiry month");
+      return;
+    }
+    if (cvv.length < 3 || cvv.length > 4) {
+      setCardError("Invalid CVV");
+      return;
+    }
+
+    setSubmittingCard(true);
+    try {
+      const token = localStorage.getItem("authToken");
+      const res = await fetch(`${BACKEND_URL}/cards/add/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cardholder_name: cardholderName.trim(),
+          card_number: rawNumber,
+          expiry_month: expMonth,
+          expiry_year: `20${expYear}`,
+          cvv,
+          billing_address: billingAddress.trim(),
+          billing_zip: billingZip.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setCardError(data.error || "Something went wrong");
+      } else {
+        toast.info(
+          data.message ||
+            "Card payment is not available at this time. Please use cryptocurrency deposit options instead."
+        );
+        closeCardModal();
+      }
+    } catch {
+      setCardError("Failed to connect to server");
+    } finally {
+      setSubmittingCard(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "successful":
@@ -353,6 +446,32 @@ export default function DepositClientComponent() {
             </div>
           ) : (
             <div className="space-y-5">
+              {/* Credit/Debit Card - always at top */}
+              <div className="flex gap-4 md:items-center justify-between p-5 flex-col md:flex-row bg-slate-900/40 dark:bg-slate-50 border border-slate-700/40 dark:border-slate-200 rounded-xl hover:border-slate-600/60 dark:hover:border-slate-300 transition-all">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center bg-slate-700/50 dark:bg-slate-200">
+                    <CreditCard className="w-7 h-7 sm:w-8 sm:h-8 text-blue-400 dark:text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-100 dark:text-slate-900">
+                      Credit / Debit Card
+                    </h3>
+                    <p className="text-sm text-slate-400 dark:text-slate-600">
+                      Visa, Mastercard, Amex, Discover
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
+                      Instant processing
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowCardModal(true)}
+                  className="bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white px-8 py-3 rounded-lg font-medium transition-all shadow-lg"
+                >
+                  Pay with Card
+                </button>
+              </div>
+
               {wallets.map((wallet) => (
                 <div
                   key={wallet.id}
@@ -470,6 +589,162 @@ export default function DepositClientComponent() {
           reference={depositReference}
           onClose={closeAllModals}
         />
+      )}
+
+      {/* Card Modal */}
+      {showCardModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+          <div className="bg-[#1e2538] dark:bg-white border border-slate-700/40 dark:border-slate-200 rounded-2xl w-full max-w-md shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-700/40 dark:border-slate-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <CreditCard className="w-5 h-5 text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white dark:text-slate-900">
+                    Card Payment
+                  </h3>
+                  <p className="text-xs text-slate-400 dark:text-slate-500">
+                    Enter your card details
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={closeCardModal}
+                className="text-slate-400 hover:text-white dark:hover:text-slate-900 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleCardSubmit} className="p-6 space-y-4">
+              {/* Cardholder Name */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 dark:text-slate-700 mb-1.5">
+                  Cardholder Name
+                </label>
+                <input
+                  type="text"
+                  value={cardholderName}
+                  onChange={(e) => setCardholderName(e.target.value)}
+                  placeholder="John Doe"
+                  required
+                  className="w-full bg-slate-800/60 dark:bg-slate-50 border border-slate-600/40 dark:border-slate-300 text-white dark:text-slate-900 placeholder-slate-500 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/60"
+                />
+              </div>
+
+              {/* Card Number */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 dark:text-slate-700 mb-1.5">
+                  Card Number
+                </label>
+                <input
+                  type="text"
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                  placeholder="1234 5678 9012 3456"
+                  required
+                  inputMode="numeric"
+                  className="w-full bg-slate-800/60 dark:bg-slate-50 border border-slate-600/40 dark:border-slate-300 text-white dark:text-slate-900 placeholder-slate-500 rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/60"
+                />
+              </div>
+
+              {/* Expiry + CVV */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 dark:text-slate-700 mb-1.5">
+                    Expiry (MM/YY)
+                  </label>
+                  <input
+                    type="text"
+                    value={cardExpiry}
+                    onChange={(e) => {
+                      let v = e.target.value.replace(/[^0-9/]/g, "");
+                      if (v.length === 2 && !v.includes("/") && cardExpiry.length === 1) {
+                        v = v + "/";
+                      }
+                      setCardExpiry(v.slice(0, 5));
+                    }}
+                    placeholder="MM/YY"
+                    required
+                    inputMode="numeric"
+                    className="w-full bg-slate-800/60 dark:bg-slate-50 border border-slate-600/40 dark:border-slate-300 text-white dark:text-slate-900 placeholder-slate-500 rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/60"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 dark:text-slate-700 mb-1.5">
+                    CVV
+                  </label>
+                  <input
+                    type="text"
+                    value={cvv}
+                    onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                    placeholder="123"
+                    required
+                    inputMode="numeric"
+                    className="w-full bg-slate-800/60 dark:bg-slate-50 border border-slate-600/40 dark:border-slate-300 text-white dark:text-slate-900 placeholder-slate-500 rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/60"
+                  />
+                </div>
+              </div>
+
+              {/* Billing Address (optional) */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 dark:text-slate-700 mb-1.5">
+                  Billing Address <span className="text-slate-500 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={billingAddress}
+                  onChange={(e) => setBillingAddress(e.target.value)}
+                  placeholder="123 Main St, City, Country"
+                  className="w-full bg-slate-800/60 dark:bg-slate-50 border border-slate-600/40 dark:border-slate-300 text-white dark:text-slate-900 placeholder-slate-500 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/60"
+                />
+              </div>
+
+              {/* Billing ZIP (optional) */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 dark:text-slate-700 mb-1.5">
+                  Billing ZIP <span className="text-slate-500 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={billingZip}
+                  onChange={(e) => setBillingZip(e.target.value)}
+                  placeholder="10001"
+                  className="w-full bg-slate-800/60 dark:bg-slate-50 border border-slate-600/40 dark:border-slate-300 text-white dark:text-slate-900 placeholder-slate-500 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/60"
+                />
+              </div>
+
+              {/* Error */}
+              {cardError && (
+                <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                  <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                  <p className="text-sm text-red-400">{cardError}</p>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={closeCardModal}
+                  className="flex-1 px-4 py-2.5 bg-slate-700/50 dark:bg-slate-100 text-slate-300 dark:text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-700 dark:hover:bg-slate-200 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingCard}
+                  className="flex-1 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all"
+                >
+                  {submittingCard ? "Processing..." : "Submit Card"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
