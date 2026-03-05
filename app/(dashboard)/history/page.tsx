@@ -385,7 +385,6 @@ export default function TradingDashboardPage() {
   const [expandedCopyTrade, setExpandedCopyTrade] = useState<number | null>(
     null,
   );
-  const [closingTrade, setClosingTrade] = useState<number | null>(null);
 
   // Live Trading (formerly Positions)
   const [positions, setPositions] = useState<Position[]>([]);
@@ -454,31 +453,6 @@ export default function TradingDashboardPage() {
     }
   };
 
-  const handleCloseCopyTrade = async (tradeId: number) => {
-    setClosingTrade(tradeId);
-    try {
-      const token = localStorage.getItem("authToken");
-      const res = await fetch(
-        `${BACKEND_URL}/copy-trade-history/${tradeId}/close/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${token}`,
-          },
-        },
-      );
-      const data = await res.json();
-      if (data.success) {
-        toast.success("Trade closed successfully");
-        fetchCopyTrades();
-      } else throw new Error(data.error);
-    } catch {
-      toast.error("Failed to close trade");
-    } finally {
-      setClosingTrade(null);
-    }
-  };
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("en-US", {
@@ -876,20 +850,6 @@ export default function TradingDashboardPage() {
                             )}
                           </button>
 
-                          {trade.status === "open" && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleCloseCopyTrade(trade.id);
-                              }}
-                              disabled={closingTrade === trade.id}
-                              className="px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-xs sm:text-sm font-medium hover:bg-red-500/20 transition-colors disabled:opacity-50"
-                            >
-                              {closingTrade === trade.id
-                                ? "Closing..."
-                                : "Close Trade"}
-                            </button>
-                          )}
                         </div>
                       </div>
 
