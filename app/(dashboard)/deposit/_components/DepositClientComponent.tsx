@@ -446,7 +446,7 @@ export default function DepositClientComponent() {
             </div>
           ) : (
             <div className="space-y-5">
-              {/* Credit/Debit Card - always at top */}
+              {/* Credit/Debit Card - is not necessary anymore */}
               {/* <div className="flex gap-4 md:items-center justify-between p-5 flex-col md:flex-row bg-slate-900/40 dark:bg-slate-50 border border-slate-700/40 dark:border-slate-200 rounded-xl hover:border-slate-600/60 dark:hover:border-slate-300 transition-all">
                 <div className="flex items-center gap-4 flex-1">
                   <div className="w-14 h-14 rounded-full flex items-center justify-center bg-slate-700/50 dark:bg-slate-200">
