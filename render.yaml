@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: citadel-frontend
+    runtime: node
+    buildCommand: "npm install && npx next build"
+    startCommand: "npm start"
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_APP_BACKEND_URL
+        sync: false
+      - key: NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+        sync: false
+      - key: NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: ALPHA_ADVANTAGE_API_KEY
+        sync: false
