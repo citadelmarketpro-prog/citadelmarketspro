@@ -16,10 +16,10 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://citadelmarketspro.com"), // Replace with your actual domain
+  metadataBase: new URL("https://citadelprosmarket.com"), // Replace with your actual domain
   title: {
-    default: "CitadelMarketsPro - Your Goal to Global Investment",
-    template: "%s | CitadelMarketsPro",
+    default: "Citadel Pro Market - Your Goal to Global Investment",
+    template: "%s | Citadel Pro Market",
   },
   description:
     "Copy Stocks, Options & Contracts with Precision. The Premier Copy-Trading Hub for Options Traders. Start trading like experts with our advanced copy-trading platform.",
@@ -42,9 +42,9 @@ export const metadata: Metadata = {
     "mirror trading",
     "algorithmic trading",
   ],
-  authors: [{ name: "CitadelMarketsPro" }],
-  creator: "CitadelMarketsPro",
-  publisher: "CitadelMarketsPro",
+  authors: [{ name: "Citadel Pro Market" }],
+  creator: "Citadel Pro Market",
+  publisher: "Citadel Pro Market",
   formatDetection: {
     email: false,
     address: false,
@@ -53,26 +53,26 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://citadelmarketspro.com",
-    siteName: "CitadelMarketsPro",
-    title: "CitadelMarketsPro - Your Goal to Global Investment",
+    url: "https://citadelprosmarket.com",
+    siteName: "Citadel Pro Market",
+    title: "Citadel Pro Market - Your Goal to Global Investment",
     description:
       "Copy Stocks, Options & Contracts with Precision. The Premier Copy-Trading Hub for Options Traders",
     images: [
       {
-        url: "https://www.citadelmarketspro.com/og-image.png", // Create this image (1200x630px recommended)
+        url: "https://www.citadelprosmarket.com/og-image.png", // Create this image (1200x630px recommended)
         width: 1200,
         height: 630,
-        alt: "CitadelMarketsPro - Copy Trading Platform",
+        alt: "Citadel Pro Market - Copy Trading Platform",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "CitadelMarketsPro - Your Goal to Global Investment",
+    title: "Citadel Pro Market - Your Goal to Global Investment",
     description:
       "Copy Stocks, Options & Contracts with Precision. The Premier Copy-Trading Hub for Options Traders",
-    images: ["https://www.citadelmarketspro.com/twitter-image.png"], // Create this image (1200x600px recommended)
+    images: ["https://www.citadelprosmarket.com/twitter-image.jpg"], // Create this image (1200x600px recommended)
     creator: "@citadelmarketspro", // Replace with your actual Twitter handle
     site: "@citadelmarketspro", // Replace with your actual Twitter handle
   },
@@ -89,21 +89,21 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "https://www.citadelmarketspro.com/favicon.ico" },
+      { url: "https://www.citadelprosmarket.com/favicon.ico" },
       {
-        url: "https://www.citadelmarketspro.com/favicon-16x16.png",
+        url: "https://www.citadelprosmarket.com/favicon-16x16.png",
         sizes: "16x16",
         type: "image/png",
       },
       {
-        url: "https://www.citadelmarketspro.com/favicon-32x32.png",
+        url: "https://www.citadelprosmarket.com/favicon-32x32.png",
         sizes: "32x32",
         type: "image/png",
       },
     ],
     apple: [
       {
-        url: "https://www.citadelmarketspro.com/apple-touch-icon.png",
+        url: "https://www.citadelprosmarket.com/apple-touch-icon.png",
         sizes: "180x180",
       },
     ],
@@ -116,7 +116,7 @@ export const metadata: Metadata = {
   },
   manifest: "/site.webmanifest",
   alternates: {
-    canonical: "https://citadelmarketspro.com",
+    canonical: "https://citadelprosmarket.com",
   },
   // verification: {
   //   google: "your-google-verification-code",
@@ -137,10 +137,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Additional SEO meta tags */}
-        <meta name="application-name" content="CitadelMarketsPro" />
+        <meta name="application-name" content="Citadel Pro Market" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="CitadelMarketsPro" />
+        <meta name="apple-mobile-web-app-title" content="Citadel Pro Market" />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
