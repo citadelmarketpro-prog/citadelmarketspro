@@ -49,6 +49,19 @@ input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
 }
 
+/* Scrolling strip animation for sample landing page */
+@keyframes scroll-strip {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-scroll-strip {
+  animation: scroll-strip 20s linear infinite;
+  width: 200%;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
 /* Hide scrollbar but allow scroll */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
