@@ -1,9 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Landmark, TrendingUp, BadgeCheck, ShieldCheck } from "lucide-react";
 import Navbar from "@/components/newlanding/Navbar";
 import SiteFooter from "@/components/newlanding/SiteFooter";
-import { FadeLeft, FadeRight, FadeUp, ZoomIn } from "@/components/newlanding/motion";
+import { FadeRight, FadeUp, ZoomIn } from "@/components/newlanding/motion";
 
 const darkGradient =
   "linear-gradient(transparent 0%,#000 95%),radial-gradient(194.14% 91.43% at 2.43% 88.15%,rgba(10,10,10,.8) 0%,rgba(10,10,10,0) 100%),conic-gradient(from 5deg at 92.78% 73.8%,rgba(65,64,62,.4) 0deg,rgba(37,37,35,.4) 360deg),conic-gradient(from -49deg at 85.69% 75.64%,rgba(98,97,97,.3) 0deg,rgba(37,37,37,.3) 360deg),#0a0a0a";
@@ -101,16 +100,6 @@ export default function InsurancePage() {
             </h2>
           </FadeUp>
           <div className="flex flex-col lg:flex-row gap-10 items-stretch">
-
-            <FadeLeft className="flex-1 rounded-2xl overflow-hidden min-h-[320px]">
-              <Image
-                src="/sample-landing/coi.jpeg"
-                alt="Financial Commission Certificate of Insurance"
-                width={800}
-                height={600}
-                className="w-full h-full object-cover"
-              />
-            </FadeLeft>
 
             <FadeRight delay={0.15} className="flex-1 flex flex-col justify-center">
               <p className="text-gray-700 leading-relaxed mb-6">
