@@ -23,7 +23,7 @@ export default function AboutSection() {
             </p>
             <p className="text-gray-400 leading-relaxed">
               From educational broker&apos;s tools, demo accounts, and 24/7 support to your financial success, Citadel
-              Markets Pro works tirelessly to remain at the forefront in trading online. Join now! Take full
+              Pros Market works tirelessly to remain at the forefront in trading online. Join now! Take full
               advantage of this online trading leader and make your way into the world of professional trading.
             </p>
           </FadeLeft>

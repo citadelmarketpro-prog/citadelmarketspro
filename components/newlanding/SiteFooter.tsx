@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FadeUp, ZoomIn } from "./motion";
+import LiquidityProvidersSection from "@/components/site/LiquidityProvidersSection";
 
 // ── Our Values ──────────────────────────────────────────────────────────────
 
@@ -147,6 +148,8 @@ export default function SiteFooter() {
           </div>
         </div>
       </section>
+
+      <LiquidityProvidersSection />
 
       {/* CTA */}
       <section

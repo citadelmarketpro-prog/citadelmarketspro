@@ -197,10 +197,10 @@ const LiquidityProvidersSection = () => {
   };
 
   const LogoItem = ({ name }: { name: string }) => (
-    <div className="flex-shrink-0 px-3 md:px-[15px] py-5 md:py-5">
-      <div className="w-[170px] md:w-[250px] h-[50px] md:h-[80px] bg-white rounded-[10px] flex items-center justify-center transition-all duration-400 hover:shadow-lg relative overflow-hidden">
+    <div className="flex-shrink-0 px-1.5 md:px-[15px] py-2 md:py-5">
+      <div className="w-[100px] md:w-[250px] h-[34px] md:h-[80px] bg-white rounded-[8px] md:rounded-[10px] flex items-center justify-center transition-all duration-400 hover:shadow-lg relative overflow-hidden">
         <div
-          className="absolute top-1/2 left-1/2 w-[210px] h-[40px] -translate-x-1/2 -translate-y-1/2 md:scale-100 scale-[0.62]"
+          className="absolute top-1/2 left-1/2 w-[210px] h-[40px] -translate-x-1/2 -translate-y-1/2 md:scale-100 scale-[0.40]"
           style={{
             backgroundImage: "url(/logos_au.png)",
             backgroundSize: "52.75rem 43.5625rem",
@@ -282,7 +282,7 @@ const LiquidityProvidersSection = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <a
               href="/register"
-              className="px-8 py-3 bg-linear-to-r from-green-500 to-green-600 text-white rounded-full font-semibold hover:shadow-xl hover:shadow-green-500/25 transition-all duration-300 hover:-translate-y-0.5 text-sm"
+              className="px-8 py-3 bg-emerald-700 hover:bg-emerald-600 text-white rounded-full font-semibold transition-all duration-300 hover:-translate-y-0.5 text-sm"
             >
               Get Started
             </a>
