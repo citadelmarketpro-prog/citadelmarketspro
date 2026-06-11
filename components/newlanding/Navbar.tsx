@@ -122,7 +122,7 @@ export default function Navbar() {
             href="/register"
             className="hidden sm:inline-flex items-center px-5 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-500 transition-colors"
           >
-            Registration
+            Get Started
           </Link>
           <button
             className="md:hidden p-2 text-white/80"
@@ -181,7 +181,7 @@ export default function Navbar() {
             className="block mt-3 text-center py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg no-underline"
             onClick={() => setMobileOpen(false)}
           >
-            Registration
+            Get Started
           </Link>
         </div>
       )}
