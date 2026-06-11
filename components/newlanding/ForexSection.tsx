@@ -28,40 +28,57 @@ const stockFeatures = [
 
 function TradingViewWidget() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const initialized = useRef(false);
 
   useEffect(() => {
-    if (!containerRef.current || containerRef.current.querySelector("script")) return;
+    if (!containerRef.current || initialized.current) return;
+    initialized.current = true;
     const script = document.createElement("script");
     script.src =
-      "https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js";
+      "https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js";
     script.async = true;
     script.innerHTML = JSON.stringify({
-      symbol: "NASDAQ:AAPL",
-      width: "100%",
-      height: "100%",
-      locale: "en",
-      dateRange: "12M",
       colorTheme: "dark",
-      trendLineColor: "rgba(41, 98, 255, 1)",
-      underLineColor: "rgba(41, 98, 255, 0.3)",
-      underLineBottomColor: "rgba(41, 98, 255, 0)",
+      dateRange: "12M",
+      showChart: true,
+      locale: "en",
       isTransparent: false,
-      autosize: true,
-      largeChartUrl: "",
+      showSymbolLogo: true,
+      showFloatingTooltip: false,
+      width: "100%",
+      height: "500",
+      tabs: [
+        {
+          title: "Stocks",
+          symbols: [
+            { s: "NASDAQ:AAPL",  d: "Apple" },
+            { s: "NASDAQ:GOOGL", d: "Alphabet" },
+            { s: "NASDAQ:MSFT",  d: "Microsoft" },
+            { s: "NASDAQ:AMZN",  d: "Amazon" },
+            { s: "NASDAQ:NVDA",  d: "NVIDIA" },
+            { s: "NYSE:TSLA",    d: "Tesla" },
+            { s: "NYSE:META",    d: "Meta" },
+            { s: "NYSE:JPM",     d: "JPMorgan" },
+          ],
+          originalTitle: "Stocks",
+        },
+      ],
     });
     containerRef.current.appendChild(script);
   }, []);
 
   return (
-    <div ref={containerRef} className="tradingview-widget-container w-full h-full">
-      <div className="tradingview-widget-container__widget w-full h-full" />
+    <div style={{ contain: "layout style", minHeight: 500 }}>
+      <div ref={containerRef} className="tradingview-widget-container w-full max-w-full overflow-hidden" style={{ height: 500 }}>
+        <div className="tradingview-widget-container__widget w-full" style={{ height: 500 }} />
+      </div>
     </div>
   );
 }
 
 export default function ForexSection() {
   return (
-    <section className="py-14 sm:py-20 bg-emerald-50">
+    <section className="py-14 sm:py-20 bg-emerald-50 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeUp>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Why trade Stocks with us?</h2>
@@ -82,7 +99,7 @@ export default function ForexSection() {
               </ZoomIn>
             ))}
           </div>
-          <FadeRight delay={0.2} className="flex-[2] rounded-xl overflow-hidden h-80 lg:h-auto lg:min-h-[380px]">
+          <FadeRight delay={0.2} className="flex-[2] rounded-xl overflow-hidden w-full min-h-[500px] max-w-full">
             <TradingViewWidget />
           </FadeRight>
         </div>

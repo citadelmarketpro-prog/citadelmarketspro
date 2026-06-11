@@ -42,7 +42,7 @@ export default function FindYourselfSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeUp>
           <h2 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-gray-900 mb-10 leading-tight">
-            Find Yourself on Citadel Markets Pro
+            Find Yourself on Citadel Pros Market
           </h2>
         </FadeUp>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

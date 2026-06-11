@@ -21,7 +21,7 @@ export default function BecomeProSection() {
           <p className="text-gray-400 leading-relaxed">
             The main criteria for a successful internet trading platform are international reputation, unwavering
             reliability, constant support at all stages, and unique useful trading features. These qualities are
-            combined in the award-winning Citadel Markets Pro broker and electronic trading platform.
+            combined in the award-winning Citadel Pros Market broker and electronic trading platform.
           </p>
         </FadeLeft>
       </div>

@@ -18,8 +18,8 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   metadataBase: new URL("https://citadelprosmarket.com"), // Replace with your actual domain
   title: {
-    default: "Citadel Pro Market - Your Goal to Global Investment",
-    template: "%s | Citadel Pro Market",
+    default: "Citadel Pros Market - Your Goal to Global Investment",
+    template: "%s | Citadel Pros Market",
   },
   description:
     "Copy Stocks, Options & Contracts with Precision. The Premier Copy-Trading Hub for Options Traders. Start trading like experts with our advanced copy-trading platform.",
@@ -42,9 +42,9 @@ export const metadata: Metadata = {
     "mirror trading",
     "algorithmic trading",
   ],
-  authors: [{ name: "Citadel Pro Market" }],
-  creator: "Citadel Pro Market",
-  publisher: "Citadel Pro Market",
+  authors: [{ name: "Citadel Pros Market" }],
+  creator: "Citadel Pros Market",
+  publisher: "Citadel Pros Market",
   formatDetection: {
     email: false,
     address: false,
@@ -54,8 +54,8 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://citadelprosmarket.com",
-    siteName: "Citadel Pro Market",
-    title: "Citadel Pro Market - Your Goal to Global Investment",
+    siteName: "Citadel Pros Market",
+    title: "Citadel Pros Market - Your Goal to Global Investment",
     description:
       "Copy Stocks, Options & Contracts with Precision. The Premier Copy-Trading Hub for Options Traders",
     images: [
@@ -63,13 +63,13 @@ export const metadata: Metadata = {
         url: "https://www.citadelprosmarket.com/og-image.png", // Create this image (1200x630px recommended)
         width: 1200,
         height: 630,
-        alt: "Citadel Pro Market - Copy Trading Platform",
+        alt: "Citadel Pros Market - Copy Trading Platform",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Citadel Pro Market - Your Goal to Global Investment",
+    title: "Citadel Pros Market - Your Goal to Global Investment",
     description:
       "Copy Stocks, Options & Contracts with Precision. The Premier Copy-Trading Hub for Options Traders",
     images: ["https://www.citadelprosmarket.com/twitter-image.jpg"], // Create this image (1200x600px recommended)
@@ -137,10 +137,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Additional SEO meta tags */}
-        <meta name="application-name" content="Citadel Pro Market" />
+        <meta name="application-name" content="Citadel Pros Market" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Citadel Pro Market" />
+        <meta name="apple-mobile-web-app-title" content="Citadel Pros Market" />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link

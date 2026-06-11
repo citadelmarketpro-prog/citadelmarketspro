@@ -15,7 +15,7 @@ export default function TradingFingertipsSection() {
                 Powerful Trading Platforms to help you succeed
               </h3>
               <p className="text-sm leading-relaxed mb-3">
-                Clients in over 200 countries and territories trade stocks, options, futures, currencies, bonds,
+                Clients in over 185 countries and territories trade stocks, options, futures, currencies, bonds,
                 funds and more on 150 global markets from a single unified platform.
               </p>
               <p className="text-sm leading-relaxed mb-3">

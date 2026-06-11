@@ -14,22 +14,11 @@ import FindYourselfSection from "@/components/newlanding/FindYourselfSection";
 import PayLessSection from "@/components/newlanding/PayLessSection";
 import TradingFingertipsSection from "@/components/newlanding/TradingFingertipsSection";
 import BecomeProSection from "@/components/newlanding/BecomeProSection";
-import OurValuesSection from "@/components/newlanding/OurValuesSection";
-import TradeEverywhereSection from "@/components/newlanding/TradeEverywhereSection";
-import AchievementsSection from "@/components/newlanding/AchievementsSection";
-import CtaSection from "@/components/newlanding/CtaSection";
-import FooterSection from "@/components/newlanding/FooterSection";
+import SiteFooter from "@/components/newlanding/SiteFooter";
 
 export default function SampleLandingPage() {
   return (
-    <div
-      className="font-sans bg-white"
-      style={{
-        backgroundImage: "url('/sample-landing/grid-right2.webp')",
-        backgroundPositionX: "right",
-        backgroundRepeat: "repeat-y",
-      }}
-    >
+    <div className="font-sans bg-white landing-grid-bg">
       <Navbar />
       <HeroSection />
       <PlatformSection />
@@ -46,11 +35,7 @@ export default function SampleLandingPage() {
       <PayLessSection />
       <TradingFingertipsSection />
       <BecomeProSection />
-      <OurValuesSection />
-      <TradeEverywhereSection />
-      <AchievementsSection />
-      <CtaSection />
-      <FooterSection />
+      <SiteFooter />
     </div>
   );
 }

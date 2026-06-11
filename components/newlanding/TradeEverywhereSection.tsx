@@ -6,7 +6,7 @@ export default function TradeEverywhereSection() {
     <section>
       <ZoomIn>
         <Image
-          src="/sample-landing/trade_everywhere.jpg"
+          src="/sample-landing/trade_everywhere.webp"
           alt="Trade Anywhere"
           width={1920}
           height={600}

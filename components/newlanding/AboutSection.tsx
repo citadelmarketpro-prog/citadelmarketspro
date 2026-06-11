@@ -14,11 +14,11 @@ export default function AboutSection() {
         <div className="flex flex-col md:flex-row gap-10">
           <FadeLeft className="flex-[3]">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-              Time to take action with the international Citadel Markets Pro broker
+              Time to take action with the international Citadel Pros Market broker
             </h2>
             <p className="text-gray-400 leading-relaxed mb-4">
               Trading will bring you profit with proper support, constant education, and a reasonable approach.
-              Citadel Markets Pro is a broker platform that has created all the conditions to help you improve your
+              Citadel Pros Market is a broker platform that has created all the conditions to help you improve your
               trading life in every possible way.
             </p>
             <p className="text-gray-400 leading-relaxed">

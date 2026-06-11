@@ -14,7 +14,7 @@ const navItems = [
         { label: "About Us", sub: "Discover our story", href: "/about" },
         { label: "Insurance", sub: "Protect your investments", href: "/insurance" },
         { label: "Regulations", sub: "Compliance and security", href: "/regulations" },
-        { label: "Lead Traders", sub: "Meet our top-performing traders", href: "/leader" },
+        { label: "Lead Traders", sub: "Meet our top-performing traders", href: "/lead-traders" },
         { label: "Security", sub: "Your assets are protected", href: "/security" },
       ],
     },
@@ -26,7 +26,7 @@ const navItems = [
       items: [
         { label: "Options copy trading", sub: "Copy top traders' options strategies", href: "/option-copy-trading" },
         { label: "Advanced trading account above PDT", sub: "Trade with higher limits and features", href: "/advance-trading" },
-        { label: "Live trading interface", sub: "Real-time trading experience", href: "/live-trading" },
+        { label: "Live trading interface", sub: "Real-time trading experience", href: "/trading-live" },
       ],
     },
   },
@@ -58,15 +58,15 @@ export default function Navbar() {
   }, [mobileOpen]);
 
   return (
-    <header className="bg-[#0a1f14] sticky top-0 z-50 shadow-lg shadow-black/30">
+    <header className="bg-[#0c5c45] sticky top-0 z-50 shadow-lg shadow-black/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-3">
         <Link href="/" className="flex-shrink-0">
           <Image
             src="/images/logo_light.png"
-            alt="Citadel Markets Pro"
-            width={130}
-            height={44}
-            className="h-11 w-auto object-contain"
+            alt="Citadel Pros Market"
+            width={180}
+            height={60}
+            className="h-16 w-auto object-contain"
           />
         </Link>
 
@@ -136,7 +136,7 @@ export default function Navbar() {
 
       {/* Mobile drawer */}
       {mobileOpen && (
-        <div className="md:hidden bg-[#0d2617] border-t border-white/10 px-4 pb-6 space-y-1">
+        <div className="md:hidden bg-[#0a4f3b] border-t border-white/10 px-4 pb-6 space-y-1">
           {navItems.map((item) =>
             item.dropdown ? (
               <div key={item.label}>

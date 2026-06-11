@@ -8,12 +8,6 @@ const darkGradient =
 
 const features = [
   {
-    img: "/sample-landing/summary.webp",
-    head: "Licensed and regulated",
-    desc: "Citadel Markets Pro is authorized financial services provider and cryptocurrency exchange.",
-    link: { label: "Our licenses", href: "/regulations" },
-  },
-  {
     img: "/sample-landing/margin.webp",
     head: "Transparent trading conditions",
     desc: "Fees from 0% with no hidden costs.",
@@ -24,6 +18,12 @@ const features = [
     head: "Always by your side",
     desc: "24/7 live support with a 30-second average response time.",
     link: null,
+  },
+  {
+    img: "/sample-landing/summary.webp",
+    head: "Licensed and regulated",
+    desc: "Citadel Pros Market is authorized financial services provider and cryptocurrency exchange.",
+    link: { label: "Our licenses", href: "/regulations" },
   },
 ];
 

@@ -11,9 +11,13 @@ export default function PlatformSection() {
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
               A user-friendly trading platform
             </h2>
-            <p className="text-gray-600 text-base leading-relaxed mb-8">
-              Trade options on financial markets and 24/7 Derived Indices. Start with just USD 0.09, and choose
-              from multiple contract types and durations to suit your trading strategy.
+            <p className="text-gray-600 text-base leading-relaxed">
+              Invest alongside top investors without micromanaging.
+            </p>
+            <p className="text-gray-600 text-base leading-relaxed mb-8 mt-4">
+              Gain exposure to professionally managed investment strategies. Entries, exits, and
+              rebalancing are automatically adjusted to your investment amount—helping remove emotion
+              from long-term investing.
             </p>
             <Link
               href="/register"

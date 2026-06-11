@@ -46,7 +46,7 @@ export default function HeroSection() {
 
         <FadeRight delay={0.15} className="relative w-full h-[320px] sm:h-[380px] md:flex-1 md:max-w-[480px] md:h-[340px] lg:max-w-lg lg:h-[380px]">
           <Image
-            src="/sample-landing/hero-img.svg"
+            src="/sample-landing/hero_image.png"
             alt="Trading platform"
             fill
             className="object-contain object-center"
